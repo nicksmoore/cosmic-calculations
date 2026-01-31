@@ -1,0 +1,259 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CelestialSync 3D Design System - "Modern Ethereal" */
+
+@layer base {
+  :root {
+    /* Core Palette */
+    --background: 235 25% 7%;
+    --foreground: 45 20% 95%;
+
+    /* Obsidian Cards */
+    --card: 235 20% 11%;
+    --card-foreground: 45 20% 95%;
+
+    /* Popovers with Glass Effect */
+    --popover: 235 20% 11%;
+    --popover-foreground: 45 20% 95%;
+
+    /* Nebula Violet Primary */
+    --primary: 275 100% 25%;
+    --primary-foreground: 45 20% 95%;
+
+    /* Secondary - Deeper Obsidian */
+    --secondary: 235 20% 15%;
+    --secondary-foreground: 45 20% 95%;
+
+    /* Muted States */
+    --muted: 235 15% 18%;
+    --muted-foreground: 235 10% 55%;
+
+    /* Accent - Starlight Gold */
+    --accent: 45 100% 50%;
+    --accent-foreground: 235 25% 7%;
+
+    /* System Colors */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 45 20% 95%;
+
+    --border: 275 30% 20%;
+    --input: 235 20% 15%;
+    --ring: 275 80% 40%;
+
+    --radius: 0.75rem;
+
+    /* Sidebar */
+    --sidebar-background: 235 25% 8%;
+    --sidebar-foreground: 45 20% 90%;
+    --sidebar-primary: 275 100% 25%;
+    --sidebar-primary-foreground: 45 20% 95%;
+    --sidebar-accent: 235 20% 15%;
+    --sidebar-accent-foreground: 45 20% 90%;
+    --sidebar-border: 275 30% 20%;
+    --sidebar-ring: 275 80% 40%;
+
+    /* Custom CelestialSync Tokens */
+    --nebula: 275 100% 25%;
+    --nebula-glow: 275 80% 40%;
+    --gold: 45 100% 50%;
+    --gold-dim: 45 80% 35%;
+    --obsidian: 235 25% 7%;
+    --obsidian-light: 235 20% 12%;
+    
+    /* Glassmorphism */
+    --glass-bg: 235 20% 15% / 0.6;
+    --glass-border: 275 40% 30% / 0.3;
+    --glass-blur: 20px;
+  }
+
+  .dark {
+    --background: 235 25% 7%;
+    --foreground: 45 20% 95%;
+
+    --card: 235 20% 11%;
+    --card-foreground: 45 20% 95%;
+
+    --popover: 235 20% 11%;
+    --popover-foreground: 45 20% 95%;
+
+    --primary: 275 100% 25%;
+    --primary-foreground: 45 20% 95%;
+
+    --secondary: 235 20% 15%;
+    --secondary-foreground: 45 20% 95%;
+
+    --muted: 235 15% 18%;
+    --muted-foreground: 235 10% 55%;
+
+    --accent: 45 100% 50%;
+    --accent-foreground: 235 25% 7%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 45 20% 95%;
+
+    --border: 275 30% 20%;
+    --input: 235 20% 15%;
+    --ring: 275 80% 40%;
+
+    --sidebar-background: 235 25% 8%;
+    --sidebar-foreground: 45 20% 90%;
+    --sidebar-primary: 275 100% 25%;
+    --sidebar-primary-foreground: 45 20% 95%;
+    --sidebar-accent: 235 20% 15%;
+    --sidebar-accent-foreground: 45 20% 90%;
+    --sidebar-border: 275 30% 20%;
+    --sidebar-ring: 275 80% 40%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 500;
+  }
+}
+
+@layer components {
+  /* Glassmorphism Panel */
+  .glass-panel {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid hsl(var(--glass-border));
+    border-radius: var(--radius);
+  }
+
+  /* Nebula Glow Effect */
+  .nebula-glow {
+    box-shadow: 
+      0 0 20px hsl(var(--nebula) / 0.3),
+      0 0 40px hsl(var(--nebula) / 0.2),
+      0 0 60px hsl(var(--nebula) / 0.1);
+  }
+
+  /* Gold Accent Glow */
+  .gold-glow {
+    box-shadow: 
+      0 0 10px hsl(var(--gold) / 0.4),
+      0 0 20px hsl(var(--gold) / 0.2);
+  }
+
+  /* Ethereal Text Gradient */
+  .text-ethereal {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--gold)) 0%,
+      hsl(45 100% 70%) 50%,
+      hsl(var(--gold)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Nebula Text Gradient */
+  .text-nebula {
+    background: linear-gradient(
+      135deg,
+      hsl(275 80% 60%) 0%,
+      hsl(300 60% 50%) 50%,
+      hsl(275 80% 60%) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Cosmic Border */
+  .cosmic-border {
+    border: 1px solid transparent;
+    background: 
+      linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
+      linear-gradient(135deg, hsl(var(--nebula-glow)), hsl(var(--gold-dim)), hsl(var(--nebula-glow))) border-box;
+  }
+
+  /* Floating Animation */
+  .float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Pulse Glow Animation */
+  .pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 
+        0 0 20px hsl(var(--nebula) / 0.3),
+        0 0 40px hsl(var(--nebula) / 0.2);
+    }
+    50% {
+      box-shadow: 
+        0 0 30px hsl(var(--nebula) / 0.5),
+        0 0 60px hsl(var(--nebula) / 0.3);
+    }
+  }
+
+  /* Starfield shimmer */
+  .shimmer {
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0%, 100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+}
+
+@layer utilities {
+  /* Custom scrollbar */
+  .scrollbar-cosmic {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--nebula-glow)) hsl(var(--obsidian-light));
+  }
+
+  .scrollbar-cosmic::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-cosmic::-webkit-scrollbar-track {
+    background: hsl(var(--obsidian-light));
+    border-radius: 4px;
+  }
+
+  .scrollbar-cosmic::-webkit-scrollbar-thumb {
+    background: hsl(var(--nebula-glow));
+    border-radius: 4px;
+  }
+
+  .scrollbar-cosmic::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--nebula));
+  }
+}

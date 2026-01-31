@@ -1,0 +1,309 @@
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Settings, Box, Circle, Loader2, CheckCircle, AlertCircle, FolderOpen, Globe } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BirthData } from "@/components/intake/BirthDataForm";
+import NatalChartWheel from "@/components/NatalChartWheel";
+import CelestialSphere3D from "@/components/CelestialSphere3D";
+import AstrocartographyMap from "@/components/AstrocartographyMap";
+import PlanetDetails from "@/components/PlanetDetails";
+import HouseDetails from "@/components/HouseDetails";
+import HouseSystemSelector from "@/components/HouseSystemSelector";
+import ZodiacSystemSelector, { ZodiacSystem } from "@/components/ZodiacSystemSelector";
+import UserMenu from "@/components/UserMenu";
+import PodcastUpsell from "@/components/PodcastUpsell";
+import SavedCharts from "@/components/SavedCharts";
+import { Planet, House } from "@/data/natalChartData";
+import { useAutoSaveChart } from "@/hooks/useChartPdf";
+import { useEphemeris } from "@/hooks/useEphemeris";
+import { useAuth } from "@/hooks/useAuth";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+interface ChartDashboardProps {
+  birthData: BirthData;
+}
+
+export type HouseSystem = "placidus" | "whole-sign" | "equal";
+
+const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
+  const [selectedPlanet, setSelectedPlanet] = useState<Planet | null>(null);
+  const [selectedHouse, setSelectedHouse] = useState<House | null>(null);
+  const [houseSystem, setHouseSystem] = useState<HouseSystem>("placidus");
+  const [zodiacSystem, setZodiacSystem] = useState<ZodiacSystem>("tropical");
+  const [showSettings, setShowSettings] = useState(false);
+  const [viewMode, setViewMode] = useState<"2d" | "3d" | "map">("2d");
+  const [showSavedCharts, setShowSavedCharts] = useState(false);
+  
+  const { user } = useAuth();
+  
+  // Use ephemeris for real calculations
+  const { chartData, isCalculated } = useEphemeris(birthData, houseSystem, zodiacSystem);
+  
+  // Auto-save PDF when chart is generated (pass auth state)
+  const { pdfState, progress } = useAutoSaveChart(birthData, houseSystem, chartData, !!user);
+
+  const handleSelectPlanet = (planet: Planet | null) => {
+    setSelectedPlanet(planet);
+    setSelectedHouse(null);
+  };
+
+  const handleSelectHouse = (house: House | null) => {
+    setSelectedHouse(house);
+    setSelectedPlanet(null);
+  };
+
+  // Handle case when chart data isn't ready
+  if (!chartData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+          <p className="text-muted-foreground">Calculating your chart...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen relative">
+      {/* User Menu - Top Right */}
+      <div className="fixed top-4 right-4 z-50">
+        <UserMenu />
+      </div>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-3 sm:px-4 pt-6 sm:pt-8 pb-24">
+        {/* Header with user info */}
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-6 sm:mb-8"
+        >
+          {/* Save Status Indicator */}
+          <div className="flex justify-center mb-4">
+            <div className="glass-panel px-4 py-2 rounded-full flex items-center gap-2 text-sm">
+              {pdfState === "generating-script" || pdfState === "generating-pdf" || pdfState === "uploading" ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  <span className="text-muted-foreground">Saving chart... {Math.round(progress)}%</span>
+                </>
+              ) : pdfState === "ready" ? (
+                <>
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  <span className="text-muted-foreground">Chart saved</span>
+                </>
+              ) : pdfState === "error" ? (
+                <>
+                  <AlertCircle className="w-4 h-4 text-destructive" />
+                  <span className="text-destructive">Save failed</span>
+                </>
+              ) : null}
+            </div>
+          </div>
+
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif text-ethereal mb-2">
+            {birthData.name}'s Cosmic Blueprint
+          </h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Born {(() => {
+              // Parse date parts to avoid timezone issues
+              const [year, month, day] = birthData.birthDate.split('-').map(Number);
+              const date = new Date(year, month - 1, day);
+              return date.toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              });
+            })()}
+            {!birthData.timeUnknown && ` at ${birthData.birthTime}`}
+            {birthData.location && ` • ${birthData.location.split(",")[0]}`}
+          </p>
+        </motion.header>
+
+        {/* Action Bar */}
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+          {/* View Mode Toggle */}
+          <div className="flex glass-panel rounded-lg p-1">
+            <Button
+              variant={viewMode === "2d" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("2d")}
+              className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
+            >
+              <Circle className="h-3 w-3 sm:h-4 sm:w-4" />
+              2D
+            </Button>
+            <Button
+              variant={viewMode === "3d" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("3d")}
+              className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
+            >
+              <Box className="h-3 w-3 sm:h-4 sm:w-4" />
+              3D
+            </Button>
+            <Button
+              variant={viewMode === "map" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("map")}
+              className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
+            >
+              <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
+              Map
+            </Button>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowSettings(!showSettings)}
+            className="gap-1 sm:gap-2 glass-panel border-border/50 text-xs sm:text-sm px-2 sm:px-3"
+          >
+            <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">House</span> System
+          </Button>
+          {user && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSavedCharts(true)}
+              className="gap-1 sm:gap-2 glass-panel border-border/50 text-xs sm:text-sm px-2 sm:px-3"
+            >
+              <FolderOpen className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">My</span> Charts
+            </Button>
+          )}
+        </div>
+
+        {/* Zodiac System Selector */}
+        <ZodiacSystemSelector value={zodiacSystem} onChange={setZodiacSystem} />
+
+        {/* House System Selector */}
+        <AnimatePresence>
+          {showSettings && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-8"
+            >
+              <HouseSystemSelector
+                value={houseSystem}
+                onChange={setHouseSystem}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Chart Area */}
+        <div className={`grid gap-4 sm:gap-8 ${viewMode === "map" ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-3"}`}>
+          {/* Chart View */}
+          <div className={viewMode === "map" ? "" : "lg:col-span-2 order-1"}>
+            <AnimatePresence mode="wait">
+              {viewMode === "2d" && (
+                <motion.div
+                  key="2d"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex justify-center px-2 sm:px-0"
+                >
+                  <NatalChartWheel
+                    onSelectPlanet={handleSelectPlanet}
+                    onSelectHouse={handleSelectHouse}
+                    selectedPlanet={selectedPlanet}
+                    selectedHouse={selectedHouse}
+                    houseSystem={houseSystem}
+                    chartData={chartData}
+                  />
+                </motion.div>
+              )}
+              {viewMode === "3d" && (
+                <motion.div
+                  key="3d"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative aspect-square max-h-[60vh] sm:max-h-none"
+                >
+                  <CelestialSphere3D
+                    onSelectPlanet={handleSelectPlanet}
+                    selectedPlanet={selectedPlanet}
+                    houseSystem={houseSystem}
+                    chartData={chartData}
+                  />
+                </motion.div>
+              )}
+              {viewMode === "map" && (
+                <motion.div
+                  key="map"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <AstrocartographyMap
+                    chartData={chartData}
+                    birthData={birthData}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Details Panel - hidden in map mode */}
+          {viewMode !== "map" && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="glass-panel p-4 sm:p-6 rounded-xl h-fit order-2"
+            >
+              {selectedPlanet && <PlanetDetails planet={selectedPlanet} />}
+              {selectedHouse && <HouseDetails house={selectedHouse} planets={chartData.planets} />}
+              {!selectedPlanet && !selectedHouse && (
+                <div className="text-center py-6 sm:py-12">
+                  <p className="text-muted-foreground text-base sm:text-lg font-serif">
+                    {viewMode === "3d" 
+                      ? "Tap a planet in the sphere to reveal its cosmic significance"
+                      : "Tap a planet or house to reveal its cosmic significance"
+                    }
+                  </p>
+                  <div className="mt-4 sm:mt-6 flex flex-wrap justify-center gap-2">
+                    {chartData.planets.slice(0, 5).map((planet) => (
+                      <button
+                        key={planet.name}
+                        onClick={() => handleSelectPlanet(planet)}
+                        className="text-xl sm:text-2xl hover:scale-125 transition-transform p-1"
+                        title={planet.name}
+                      >
+                        {planet.symbol}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </div>
+
+        {/* Podcast Upsell Section */}
+        <PodcastUpsell birthData={birthData} />
+      </main>
+
+      {/* Saved Charts Dialog */}
+      <Dialog open={showSavedCharts} onOpenChange={setShowSavedCharts}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>My Saved Charts</DialogTitle>
+          </DialogHeader>
+          <SavedCharts />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default ChartDashboard;
