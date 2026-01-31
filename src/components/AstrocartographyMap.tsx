@@ -92,17 +92,65 @@ const AstrocartographyMap = ({ chartData, birthData }: AstrocartographyMapProps)
     );
   }, [acgData, visiblePlanets, visibleLineTypes]);
 
+  const [mapboxToken, setMapboxToken] = useState<string | null>(
+    import.meta.env.VITE_MAPBOX_TOKEN ?? null
+  );
+  const [mapError, setMapError] = useState<string | null>(null);
+
+  // Fetch token from backend if it isn't present in the client build env.
+  useEffect(() => {
+    if (mapboxToken) return;
+
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-mapbox-token`,
+          {
+            headers: {
+              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            signal: controller.signal,
+          }
+        );
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(
+            data?.error
+              ? `Map token fetch failed: ${data.error}`
+              : `Map token fetch failed (${res.status})`
+          );
+        }
+
+        if (!data?.token) {
+          throw new Error("Map token fetch returned no token");
+        }
+
+        setMapboxToken(String(data.token));
+      } catch (e) {
+        if (controller.signal.aborted) return;
+        const msg = e instanceof Error ? e.message : "Unknown error";
+        console.error("Failed to fetch Mapbox token:", e);
+        setMapError(msg);
+      }
+    })();
+
+    return () => controller.abort();
+  }, [mapboxToken]);
+
   // Initialize map
   useEffect(() => {
     if (!mapContainer.current) return;
+    if (map.current) return;
 
-    const token = import.meta.env.VITE_MAPBOX_TOKEN;
-    if (!token) {
-      console.error("Mapbox token not found");
+    if (!mapboxToken) {
+      // Don’t set an error immediately; token may still be loading from backend.
       return;
     }
 
-    mapboxgl.accessToken = token;
+    mapboxgl.accessToken = mapboxToken;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -114,6 +162,14 @@ const AstrocartographyMap = ({ chartData, birthData }: AstrocartographyMapProps)
 
     map.current.on("load", () => {
       setMapLoaded(true);
+    });
+
+    map.current.on("error", (e) => {
+      // Mapbox errors can be opaque; give a readable message in UI.
+      console.error("Mapbox error:", e);
+      setMapError(
+        "Map failed to load. This is usually an invalid Mapbox token or blocked Mapbox requests."
+      );
     });
 
     // Click handler for relocation
@@ -129,12 +185,28 @@ const AstrocartographyMap = ({ chartData, birthData }: AstrocartographyMapProps)
         .flatMap((p) => {
           const results: { planet: string; lineType: LineType; distance: number }[] = [];
           if (p.mcDistance < orbDegrees) {
-            results.push({ planet: p.planetName, lineType: "MC", distance: p.mcDistance });
-            results.push({ planet: p.planetName, lineType: "IC", distance: p.mcDistance });
+            results.push({
+              planet: p.planetName,
+              lineType: "MC",
+              distance: p.mcDistance,
+            });
+            results.push({
+              planet: p.planetName,
+              lineType: "IC",
+              distance: p.mcDistance,
+            });
           }
           if (p.ascDistance < orbDegrees) {
-            results.push({ planet: p.planetName, lineType: "ASC", distance: p.ascDistance });
-            results.push({ planet: p.planetName, lineType: "DSC", distance: p.ascDistance });
+            results.push({
+              planet: p.planetName,
+              lineType: "ASC",
+              distance: p.ascDistance,
+            });
+            results.push({
+              planet: p.planetName,
+              lineType: "DSC",
+              distance: p.ascDistance,
+            });
           }
           return results;
         })
@@ -147,8 +219,10 @@ const AstrocartographyMap = ({ chartData, birthData }: AstrocartographyMapProps)
 
     return () => {
       map.current?.remove();
+      map.current = null;
+      setMapLoaded(false);
     };
-  }, []);
+  }, [mapboxToken]);
 
   // Update lines when data or filters change
   useEffect(() => {
@@ -254,6 +328,29 @@ const AstrocartographyMap = ({ chartData, birthData }: AstrocartographyMapProps)
     <div className="relative w-full h-[600px] lg:h-[700px] rounded-xl overflow-hidden">
       {/* Map Container */}
       <div ref={mapContainer} className="absolute inset-0" />
+
+      {/* Map status overlay */}
+      {!mapLoaded && (
+        <div className="absolute inset-0 z-[1] pointer-events-none">
+          <div className="absolute inset-0 bg-background/40" />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 glass-panel border border-border/50 rounded-xl p-4 max-w-sm w-[92%] text-center">
+            <p className="text-sm font-medium">
+              {mapError
+                ? "Map unavailable"
+                : mapboxToken
+                ? "Loading map…"
+                : "Preparing map…"}
+            </p>
+            {mapError ? (
+              <p className="mt-1 text-xs text-muted-foreground">{mapError}</p>
+            ) : (
+              <p className="mt-1 text-xs text-muted-foreground">
+                If this doesn’t load, double-check your Mapbox token.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Controls Overlay */}
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
