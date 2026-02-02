@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, Box, Circle, Loader2, CheckCircle, AlertCircle, FolderOpen, Globe } from "lucide-react";
+import { Settings, Box, Circle, Loader2, CheckCircle, AlertCircle, FolderOpen, Globe, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BirthData } from "@/components/intake/BirthDataForm";
 import NatalChartWheel from "@/components/NatalChartWheel";
@@ -14,6 +14,7 @@ import ZodiacSystemSelector, { ZodiacSystem } from "@/components/ZodiacSystemSel
 import UserMenu from "@/components/UserMenu";
 import PodcastUpsell from "@/components/PodcastUpsell";
 import SavedCharts from "@/components/SavedCharts";
+import NatalChartExplainer from "@/components/NatalChartExplainer";
 import { Planet, House } from "@/data/natalChartData";
 import { useAutoSaveChart } from "@/hooks/useChartPdf";
 import { useEphemeris } from "@/hooks/useEphemeris";
@@ -34,6 +35,7 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
   const [showSettings, setShowSettings] = useState(false);
   const [viewMode, setViewMode] = useState<"2d" | "3d" | "map">("2d");
   const [showSavedCharts, setShowSavedCharts] = useState(false);
+  const [showExplainer, setShowExplainer] = useState(false);
   
   const { user } = useAuth();
   
@@ -177,6 +179,15 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
               <span className="hidden xs:inline">My</span> Charts
             </Button>
           )}
+          <Button
+            variant={showExplainer ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowExplainer(!showExplainer)}
+            className="gap-1 sm:gap-2 glass-panel border-border/50 text-xs sm:text-sm px-2 sm:px-3"
+          >
+            <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Chart</span> Guide
+          </Button>
         </div>
 
         {/* Zodiac System Selector */}
@@ -292,6 +303,20 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
             </motion.div>
           )}
         </div>
+
+        {/* Natal Chart Explainer */}
+        <AnimatePresence>
+          {showExplainer && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-8"
+            >
+              <NatalChartExplainer chartData={chartData} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Podcast Upsell Section */}
         <PodcastUpsell birthData={birthData} />

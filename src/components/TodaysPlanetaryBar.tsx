@@ -238,21 +238,36 @@ const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full glass-panel border border-border/30 rounded-xl backdrop-blur-md mb-6"
+      className="w-full glass-panel border border-border/30 rounded-xl backdrop-blur-md mb-8"
     >
-      <div className="flex items-center px-4 py-3 gap-4">
-        {/* Date & Label */}
+      {/* Header Row */}
+      <div className="flex items-center px-4 py-3 gap-4 border-b border-border/20">
         <div className="flex items-center gap-2 shrink-0">
           <Sparkles className="h-4 w-4 text-primary" />
           <div className="text-sm">
-            <span className="text-foreground font-medium">Today's Transits</span>
+            <span className="text-foreground font-medium">Today's Cosmic Weather</span>
             <span className="text-xs text-muted-foreground ml-2">{dateString}</span>
           </div>
         </div>
 
-        {/* Scrollable planets */}
-        <ScrollArea className="flex-1">
-          <div className="flex items-center gap-2 pb-2">
+        {/* Significant transit callout */}
+        {significantTransit && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/30 ml-auto"
+          >
+            <span className="text-xs font-medium text-primary">
+              ✨ {getAspectDescription(significantTransit)}
+            </span>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Scrollable planets */}
+      <div className="px-4 py-3">
+        <ScrollArea className="w-full">
+          <div className="flex items-center gap-3 pb-2">
             {transits.planets.map((planet) => (
               <PlanetChip 
                 key={planet.name} 
@@ -263,20 +278,16 @@ const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
           </div>
           <ScrollBar orientation="horizontal" className="h-1.5" />
         </ScrollArea>
-
-        {/* Significant transit callout */}
-        {significantTransit && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/30 shrink-0"
-          >
-            <span className="text-xs font-medium text-primary">
-              {getAspectDescription(significantTransit)}
-            </span>
-          </motion.div>
-        )}
       </div>
+
+      {/* Mobile significant transit */}
+      {significantTransit && (
+        <div className="md:hidden px-4 pb-3">
+          <div className="text-xs text-primary bg-primary/10 rounded-lg px-3 py-2 border border-primary/30">
+            ✨ {getAspectDescription(significantTransit)}
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };
