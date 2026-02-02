@@ -14,13 +14,13 @@ import {
   LINE_SYMBOLS,
   BENEFIT_CATEGORIES,
 } from "@/lib/astrocartography";
-import TodaysPlanetaryBar from "./TodaysPlanetaryBar";
+import { getACGLineInterpretation, LINE_TYPE_MEANINGS } from "@/lib/astrocartography/interpretations";
 import MapControls from "./astrocartography/MapControls";
 import MapLegend from "./astrocartography/MapLegend";
 import LocationPanel from "./astrocartography/LocationPanel";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Info } from "lucide-react";
+import { Info, X } from "lucide-react";
 
 interface AstrocartographyMapProps {
   chartData: NatalChartData;
@@ -49,6 +49,12 @@ const AstrocartographyMap = ({ chartData, birthData }: AstrocartographyMapProps)
     lng: number;
     lat: number;
     nearbyLines: { planet: string; lineType: LineType; distance: number }[];
+  } | null>(null);
+  const [hoveredLine, setHoveredLine] = useState<{
+    planet: string;
+    lineType: LineType;
+    x: number;
+    y: number;
   } | null>(null);
   
   // Filters
@@ -311,6 +317,35 @@ const AstrocartographyMap = ({ chartData, birthData }: AstrocartographyMapProps)
           ...(isDashed && { "line-dasharray": [4, 2] }),
         },
       });
+
+      // Mouse events for hover tooltip
+      map.current?.on("mouseenter", coreLayerId, (e) => {
+        if (map.current) map.current.getCanvas().style.cursor = "pointer";
+        setHoveredLine({
+          planet: line.planet,
+          lineType: line.lineType,
+          x: e.point.x,
+          y: e.point.y,
+        });
+      });
+
+      map.current?.on("mouseleave", coreLayerId, () => {
+        if (map.current) map.current.getCanvas().style.cursor = "";
+        setHoveredLine(null);
+      });
+
+      map.current?.on("mousemove", coreLayerId, (e) => {
+        setHoveredLine((prev) =>
+          prev
+            ? { ...prev, x: e.point.x, y: e.point.y }
+            : {
+                planet: line.planet,
+                lineType: line.lineType,
+                x: e.point.x,
+                y: e.point.y,
+              }
+        );
+      });
     });
   }, [filteredLines, mapLoaded]);
 
@@ -349,13 +384,16 @@ const AstrocartographyMap = ({ chartData, birthData }: AstrocartographyMapProps)
     setSelectedLocation(null);
   }, []);
 
+  // Get line interpretation for hovered line
+  const hoveredLineInterpretation = useMemo(() => {
+    if (!hoveredLine) return null;
+    return getACGLineInterpretation(hoveredLine.planet, hoveredLine.lineType);
+  }, [hoveredLine]);
+
   return (
     <div className="relative w-full flex flex-col">
-      {/* Today's Planetary Alignments Bar */}
-      <TodaysPlanetaryBar chartData={chartData} />
-
       {/* Map Container */}
-      <div className="relative w-full h-[600px] lg:h-[700px] rounded-b-xl overflow-hidden">
+      <div className="relative w-full h-[600px] lg:h-[700px] rounded-xl overflow-hidden">
         <div ref={mapContainer} className="absolute inset-0" />
 
         {/* Loading/Error overlay */}
@@ -420,7 +458,72 @@ const AstrocartographyMap = ({ chartData, birthData }: AstrocartographyMapProps)
           )}
         </AnimatePresence>
 
-        {/* Info button */}
+        {/* Line Hover Tooltip */}
+        <AnimatePresence>
+          {hoveredLine && hoveredLineInterpretation && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="absolute z-20 pointer-events-none"
+              style={{
+                left: Math.min(hoveredLine.x + 16, window.innerWidth - 320),
+                top: Math.max(hoveredLine.y - 100, 16),
+              }}
+            >
+              <div className="w-72 glass-panel border border-border/50 rounded-lg p-4 shadow-xl">
+                <div className="flex items-center gap-2 mb-2">
+                  <span
+                    className="text-xl"
+                    style={{ color: PLANET_COLORS[hoveredLine.planet] }}
+                  >
+                    {hoveredLine.planet === "Sun" ? "☉" :
+                     hoveredLine.planet === "Moon" ? "☽" :
+                     hoveredLine.planet === "Mercury" ? "☿" :
+                     hoveredLine.planet === "Venus" ? "♀" :
+                     hoveredLine.planet === "Mars" ? "♂" :
+                     hoveredLine.planet === "Jupiter" ? "♃" :
+                     hoveredLine.planet === "Saturn" ? "♄" :
+                     hoveredLine.planet === "Uranus" ? "♅" :
+                     hoveredLine.planet === "Neptune" ? "♆" :
+                     hoveredLine.planet === "Pluto" ? "♇" :
+                     hoveredLine.planet === "Chiron" ? "⚷" : "?"}
+                  </span>
+                  <div>
+                    <h4 className="font-semibold text-sm">{hoveredLineInterpretation.title}</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {LINE_TYPE_MEANINGS[hoveredLine.lineType]?.keyword}
+                    </p>
+                  </div>
+                </div>
+                
+                <p className="text-xs text-foreground/90 leading-relaxed mb-3">
+                  {hoveredLineInterpretation.summary}
+                </p>
+                
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-xs font-medium text-green-400 mb-1">✓ Benefits</p>
+                    <ul className="text-xs text-muted-foreground space-y-0.5">
+                      {hoveredLineInterpretation.benefits.slice(0, 2).map((b, i) => (
+                        <li key={i}>• {b}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-amber-400 mb-1">⚡ Challenges</p>
+                    <ul className="text-xs text-muted-foreground space-y-0.5">
+                      {hoveredLineInterpretation.challenges.slice(0, 2).map((c, i) => (
+                        <li key={i}>• {c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <div className="absolute bottom-4 right-4 z-10">
           <Popover>
             <PopoverTrigger asChild>

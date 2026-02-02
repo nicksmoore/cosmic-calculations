@@ -6,6 +6,7 @@ import { BirthData } from "@/components/intake/BirthDataForm";
 import NatalChartWheel from "@/components/NatalChartWheel";
 import CelestialSphere3D from "@/components/CelestialSphere3D";
 import AstrocartographyMap from "@/components/AstrocartographyMap";
+import TodaysPlanetaryBar from "@/components/TodaysPlanetaryBar";
 import PlanetDetails from "@/components/PlanetDetails";
 import HouseDetails from "@/components/HouseDetails";
 import HouseSystemSelector from "@/components/HouseSystemSelector";
@@ -119,6 +120,9 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
             {birthData.location && ` • ${birthData.location.split(",")[0]}`}
           </p>
         </motion.header>
+
+        {/* Today's Planetary Transits Bar */}
+        <TodaysPlanetaryBar chartData={chartData} />
 
         {/* Action Bar */}
         <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
