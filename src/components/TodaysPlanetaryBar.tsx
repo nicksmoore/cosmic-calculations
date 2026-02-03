@@ -75,7 +75,7 @@ const PlanetChip = ({ planet, natalPlanets, onClick }: PlanetChipProps) => {
 
       {/* Retrograde indicator */}
       {planet.isRetrograde && (
-        <span className="text-xs text-warning font-medium">℞</span>
+        <span className="text-xs text-amber-500 font-medium">℞</span>
       )}
 
       {/* Return indicator */}
