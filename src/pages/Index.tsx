@@ -18,9 +18,27 @@ const demoData: BirthData = {
   timezone: "UTC-8",
 };
 
+const BIRTH_DATA_STORAGE_KEY = "cosmic_birthData_v1";
+
 const Index = () => {
   const [appState, setAppState] = useState<AppState>("intake");
   const [birthData, setBirthData] = useState<BirthData | null>(null);
+
+  // Restore last chart state so navigating away (e.g., to transit detail) doesn't reset back to intake.
+  useEffect(() => {
+    try {
+      const raw = window.sessionStorage.getItem(BIRTH_DATA_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as BirthData;
+      // Very small sanity check to avoid crashing on bad data
+      if (parsed?.birthDate && parsed?.name) {
+        setBirthData(parsed);
+        setAppState("chart");
+      }
+    } catch {
+      // Ignore corrupted storage
+    }
+  }, []);
 
   // Dev shortcut: Press Escape to skip to demo chart (Escape won't type in inputs)
   useEffect(() => {
@@ -28,6 +46,11 @@ const Index = () => {
       if (e.key === 'Escape' && appState === 'intake') {
         setBirthData(demoData);
         setAppState('chart');
+        try {
+          window.sessionStorage.setItem(BIRTH_DATA_STORAGE_KEY, JSON.stringify(demoData));
+        } catch {
+          // ignore
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -37,6 +60,11 @@ const Index = () => {
   const handleFormSubmit = async (data: BirthData) => {
     setBirthData(data);
     setAppState("chart");
+    try {
+      window.sessionStorage.setItem(BIRTH_DATA_STORAGE_KEY, JSON.stringify(data));
+    } catch {
+      // ignore
+    }
   };
 
   return (
