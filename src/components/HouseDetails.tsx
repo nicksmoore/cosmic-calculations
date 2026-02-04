@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { House, Planet } from "@/data/natalChartData";
 import { getHouseInterpretation } from "@/data/houseInterpretations";
+import { toRomanNumeral, getHouseCuspLabel } from "@/lib/utils/romanNumerals";
 
 interface HouseDetailsProps {
   house: House;
