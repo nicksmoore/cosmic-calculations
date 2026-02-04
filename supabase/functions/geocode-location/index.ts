@@ -7,6 +7,32 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+/**
+ * Sanitize location query to prevent injection attacks
+ * Allows alphanumeric characters, spaces, commas, periods, hyphens, apostrophes,
+ * and common international characters for city names
+ */
+function sanitizeLocationQuery(query: string): string {
+  if (!query || typeof query !== 'string') return '';
+  
+  return query
+    // Remove potentially harmful characters (angle brackets, braces, brackets)
+    .replace(/[<>{}[\]\\]/g, '')
+    // Allow letters (including Unicode), numbers, spaces, and common location punctuation
+    .replace(/[^\p{L}\p{N}\s,.'\-]/gu, '')
+    .trim()
+    .slice(0, 200); // Max length to prevent abuse
+}
+
+/**
+ * Validate and sanitize limit parameter
+ */
+function validateLimit(limitParam: string | null): number {
+  const parsed = parseInt(limitParam ?? '5', 10);
+  if (isNaN(parsed) || parsed < 1) return 5;
+  return Math.min(parsed, 10); // Cap at 10 results
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -39,9 +65,13 @@ serve(async (req) => {
     }
 
     const url = new URL(req.url);
-    const q = url.searchParams.get("q")?.trim() ?? "";
-    const limit = Math.min(Number(url.searchParams.get("limit") ?? 5), 10);
+    
+    // Sanitize and validate the query parameter
+    const rawQuery = url.searchParams.get("q") ?? "";
+    const q = sanitizeLocationQuery(rawQuery);
+    const limit = validateLimit(url.searchParams.get("limit"));
 
+    // Validate minimum length after sanitization
     if (q.length < 3) {
       return new Response(JSON.stringify([]), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -77,8 +107,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("geocode-location error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ error: "An error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
