@@ -41,8 +41,8 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
               >
                 <AccordionTrigger className="hover:no-underline py-3">
                   <div className="flex items-center gap-3 text-left w-full">
-                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm shrink-0">
-                      {house.number}
+                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-xs shrink-0">
+                      {toRomanNumeral(house.number)}
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
