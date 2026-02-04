@@ -1,16 +1,17 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { NatalChartData } from "@/data/natalChartData";
 import {
-  calculateTransits,
   getMostSignificantTransit,
   getAspectDescription,
   TransitPlanet,
   ZODIAC_SIGNS,
 } from "@/lib/astrocartography/transits";
+import { useTransitRefresh } from "@/hooks/useTransitRefresh";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Sparkles, ChevronRight } from "lucide-react";
+import { Sparkles, ChevronRight, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface TodaysPlanetaryBarProps {
   chartData: NatalChartData;
