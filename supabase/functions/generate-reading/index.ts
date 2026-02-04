@@ -29,6 +29,26 @@ interface RequestBody {
   houseSystem: string;
 }
 
+// Sanitize user input to prevent prompt injection
+function sanitizeForPrompt(input: string, maxLength = 100): string {
+  if (!input || typeof input !== 'string') return '';
+  return input
+    .replace(/[\n\r]/g, ' ')  // Remove newlines
+    .replace(/[<>{}[\]]/g, '') // Remove special chars
+    .trim()
+    .slice(0, maxLength);
+}
+
+// Validate date format (YYYY-MM-DD)
+function isValidDate(date: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(date);
+}
+
+// Validate time format (HH:MM)
+function isValidTime(time: string): boolean {
+  return /^\d{2}:\d{2}$/.test(time);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
