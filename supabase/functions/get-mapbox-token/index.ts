@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,14 +13,39 @@ serve(async (req) => {
   }
 
   try {
+    // Authentication check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Authorization required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data, error: authError } = await supabaseClient.auth.getUser(token);
+
+    if (authError || !data?.user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid authentication" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Mapbox public tokens are intended to be used in client apps.
     // We still store it as a backend secret so remixes don't break.
-    const token =
+    const mapboxToken =
       Deno.env.get("VITE_MAPBOX_TOKEN") ??
       Deno.env.get("MAPBOX_TOKEN") ??
       "";
 
-    if (!token) {
+    if (!mapboxToken) {
       return new Response(
         JSON.stringify({ error: "VITE_MAPBOX_TOKEN is not configured" }),
         {
@@ -29,7 +55,7 @@ serve(async (req) => {
       );
     }
 
-    return new Response(JSON.stringify({ token }), {
+    return new Response(JSON.stringify({ token: mapboxToken }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
