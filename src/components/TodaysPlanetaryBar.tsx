@@ -169,6 +169,17 @@ const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
           </div>
         </div>
 
+        {/* Refresh button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleRefresh}
+          className="h-7 w-7 p-0 shrink-0"
+          title="Refresh transits"
+        >
+          <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+        </Button>
+
         {/* Significant transit callout */}
         {significantTransit && (
           <motion.div
