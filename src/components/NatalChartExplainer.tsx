@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toRomanNumeral, getHouseCuspLabel } from "@/lib/utils/romanNumerals";
 
 interface NatalChartExplainerProps {
   chartData: NatalChartData;
