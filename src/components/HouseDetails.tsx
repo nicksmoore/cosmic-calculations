@@ -42,7 +42,7 @@ const HouseDetails = ({ house, planets }: HouseDetailsProps) => {
       {interpretation.signInterpretation && (
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-accent uppercase tracking-wider">
-            {house.sign} on the {house.number === 1 ? "Ascendant" : `${house.number}${getOrdinalSuffix(house.number)} House`}
+            {house.sign} on the {getHouseCuspLabel(house.number)}
           </h4>
           <div className="p-4 rounded-lg cosmic-border">
             <p className="text-sm leading-relaxed text-foreground/90">
