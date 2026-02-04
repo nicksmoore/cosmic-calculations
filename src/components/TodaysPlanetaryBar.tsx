@@ -118,33 +118,40 @@ const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
     }));
   }, [chartData]);
 
-  const transits = useMemo(() => {
-    return calculateTransits(
-      natalPlanets,
-      chartData.angles?.ascendant?.longitude,
-      chartData.angles?.midheaven?.longitude
-    );
-  }, [chartData, natalPlanets]);
+  // Use the transit refresh hook for automatic daily updates
+  const { transits, lastRefreshed, refresh } = useTransitRefresh({
+    natalPlanets,
+    ascendantLongitude: chartData.angles?.ascendant?.longitude,
+    midheavenLongitude: chartData.angles?.midheaven?.longitude,
+  });
 
   const significantTransit = useMemo(
-    () => getMostSignificantTransit(transits),
+    () => transits ? getMostSignificantTransit(transits) : null,
     [transits]
   );
 
-  const dateString = transits.date.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
+  const dateString = useMemo(() => {
+    return lastRefreshed.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  }, [lastRefreshed]);
 
-  const handlePlanetClick = (planet: TransitPlanet) => {
+  const handlePlanetClick = useCallback((planet: TransitPlanet) => {
     navigate("/transit", {
       state: {
         planet,
         natalPlanets: natalPlanets.map((p) => ({ name: p.name, sign: p.sign })),
       },
     });
-  };
+  }, [navigate, natalPlanets]);
+
+  const handleRefresh = useCallback(() => {
+    refresh();
+  }, [refresh]);
+
+  if (!transits) return null;
 
   return (
     <motion.div
