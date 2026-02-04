@@ -73,7 +73,7 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
                     {interpretation.signInterpretation && (
                       <div className="space-y-2">
                         <h5 className="text-sm font-medium text-primary">
-                          {house.sign} on the {house.number === 1 ? "Ascendant" : `${ordinal(house.number)} House Cusp`}
+                          {house.sign} on the {getHouseCuspLabel(house.number)}
                         </h5>
                         <p className="text-sm text-foreground/90 leading-relaxed bg-primary/5 rounded-lg p-3 border border-primary/10">
                           {interpretation.signInterpretation}
