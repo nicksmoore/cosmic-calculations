@@ -24,7 +24,7 @@ export type Database = {
           location: string | null
           name: string
           storage_path: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           birth_date: string
@@ -35,7 +35,7 @@ export type Database = {
           location?: string | null
           name: string
           storage_path: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           birth_date?: string
@@ -46,7 +46,7 @@ export type Database = {
           location?: string | null
           name?: string
           storage_path?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
