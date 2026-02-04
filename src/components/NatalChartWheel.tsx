@@ -4,6 +4,7 @@ import { zodiacSigns, Planet, House, NatalChartData } from "@/data/natalChartDat
 import { HouseSystem } from "./ChartDashboard";
 import AspectLines from "./AspectLines";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { toRomanNumeral } from "@/lib/utils/romanNumerals";
 
 interface NatalChartWheelProps {
   onSelectPlanet: (planet: Planet | null) => void;
