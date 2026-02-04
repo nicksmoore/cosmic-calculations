@@ -255,9 +255,9 @@ const NatalChartWheel = ({
                   textAnchor="middle"
                   dominantBaseline="middle"
                   className="fill-foreground font-medium"
-                  style={{ fontSize: isMobile ? "10px" : "14px" }}
+                  style={{ fontSize: isMobile ? "8px" : "12px" }}
                 >
-                  {house.number}
+                  {toRomanNumeral(house.number)}
                 </text>
               </g>
             );
