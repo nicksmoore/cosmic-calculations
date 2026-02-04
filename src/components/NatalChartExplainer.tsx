@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toRomanNumeral, getHouseCuspLabel } from "@/lib/utils/romanNumerals";
 
 interface NatalChartExplainerProps {
   chartData: NatalChartData;
@@ -40,8 +41,8 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
               >
                 <AccordionTrigger className="hover:no-underline py-3">
                   <div className="flex items-center gap-3 text-left w-full">
-                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm shrink-0">
-                      {house.number}
+                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-xs shrink-0">
+                      {toRomanNumeral(house.number)}
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -72,7 +73,7 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
                     {interpretation.signInterpretation && (
                       <div className="space-y-2">
                         <h5 className="text-sm font-medium text-primary">
-                          {house.sign} on the {house.number === 1 ? "Ascendant" : `${ordinal(house.number)} House Cusp`}
+                          {house.sign} on the {getHouseCuspLabel(house.number)}
                         </h5>
                         <p className="text-sm text-foreground/90 leading-relaxed bg-primary/5 rounded-lg p-3 border border-primary/10">
                           {interpretation.signInterpretation}
@@ -145,11 +146,5 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
     </div>
   );
 };
-
-function ordinal(n: number): string {
-  const s = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
 
 export default NatalChartExplainer;

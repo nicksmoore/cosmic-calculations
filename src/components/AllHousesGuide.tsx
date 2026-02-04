@@ -6,6 +6,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { toRomanNumeral } from "@/lib/utils/romanNumerals";
 
 interface AllHousesGuideProps {
   houses: House[];
@@ -26,8 +27,8 @@ const AllHousesGuide = ({ houses, planets }: AllHousesGuideProps) => {
           >
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center gap-4 text-left">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">
-                  {house.number}
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-xs">
+                  {toRomanNumeral(house.number)}
                 </span>
                 <div>
                   <h4 className="font-semibold text-foreground">{house.theme}</h4>

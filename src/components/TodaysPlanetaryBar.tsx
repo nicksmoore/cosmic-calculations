@@ -1,16 +1,17 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { NatalChartData } from "@/data/natalChartData";
 import {
-  calculateTransits,
   getMostSignificantTransit,
   getAspectDescription,
   TransitPlanet,
   ZODIAC_SIGNS,
 } from "@/lib/astrocartography/transits";
+import { useTransitRefresh } from "@/hooks/useTransitRefresh";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Sparkles, ChevronRight } from "lucide-react";
+import { Sparkles, ChevronRight, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface TodaysPlanetaryBarProps {
   chartData: NatalChartData;
@@ -117,33 +118,40 @@ const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
     }));
   }, [chartData]);
 
-  const transits = useMemo(() => {
-    return calculateTransits(
-      natalPlanets,
-      chartData.angles?.ascendant?.longitude,
-      chartData.angles?.midheaven?.longitude
-    );
-  }, [chartData, natalPlanets]);
+  // Use the transit refresh hook for automatic daily updates
+  const { transits, lastRefreshed, refresh } = useTransitRefresh({
+    natalPlanets,
+    ascendantLongitude: chartData.angles?.ascendant?.longitude,
+    midheavenLongitude: chartData.angles?.midheaven?.longitude,
+  });
 
   const significantTransit = useMemo(
-    () => getMostSignificantTransit(transits),
+    () => transits ? getMostSignificantTransit(transits) : null,
     [transits]
   );
 
-  const dateString = transits.date.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
+  const dateString = useMemo(() => {
+    return lastRefreshed.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  }, [lastRefreshed]);
 
-  const handlePlanetClick = (planet: TransitPlanet) => {
+  const handlePlanetClick = useCallback((planet: TransitPlanet) => {
     navigate("/transit", {
       state: {
         planet,
         natalPlanets: natalPlanets.map((p) => ({ name: p.name, sign: p.sign })),
       },
     });
-  };
+  }, [navigate, natalPlanets]);
+
+  const handleRefresh = useCallback(() => {
+    refresh();
+  }, [refresh]);
+
+  if (!transits) return null;
 
   return (
     <motion.div
@@ -160,6 +168,17 @@ const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
             <span className="text-xs text-muted-foreground ml-2">{dateString}</span>
           </div>
         </div>
+
+        {/* Refresh button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleRefresh}
+          className="h-7 w-7 p-0 shrink-0"
+          title="Refresh transits"
+        >
+          <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+        </Button>
 
         {/* Significant transit callout */}
         {significantTransit && (

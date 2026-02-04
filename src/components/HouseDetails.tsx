@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { House, Planet } from "@/data/natalChartData";
 import { getHouseInterpretation } from "@/data/houseInterpretations";
+import { toRomanNumeral, getHouseCuspLabel } from "@/lib/utils/romanNumerals";
 
 interface HouseDetailsProps {
   house: House;
@@ -23,7 +24,7 @@ const HouseDetails = ({ house, planets }: HouseDetailsProps) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-2xl font-serif text-ethereal">House {house.number}</h3>
+          <h3 className="text-2xl font-serif text-ethereal">House {toRomanNumeral(house.number)}</h3>
           <p className="text-sm text-accent">{house.theme}</p>
         </div>
         <div className="px-3 py-1.5 rounded-full bg-accent/20 border border-accent/30 text-accent text-sm font-medium">
@@ -41,7 +42,7 @@ const HouseDetails = ({ house, planets }: HouseDetailsProps) => {
       {interpretation.signInterpretation && (
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-accent uppercase tracking-wider">
-            {house.sign} on the {house.number === 1 ? "Ascendant" : `${house.number}${getOrdinalSuffix(house.number)} House`}
+            {house.sign} on the {getHouseCuspLabel(house.number)}
           </h4>
           <div className="p-4 rounded-lg cosmic-border">
             <p className="text-sm leading-relaxed text-foreground/90">
@@ -114,12 +115,5 @@ const HouseDetails = ({ house, planets }: HouseDetailsProps) => {
     </motion.div>
   );
 };
-
-// Helper function for ordinal suffixes
-function getOrdinalSuffix(n: number): string {
-  const s = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return s[(v - 20) % 10] || s[v] || s[0];
-}
 
 export default HouseDetails;
