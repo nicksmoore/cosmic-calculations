@@ -6,6 +6,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { toRomanNumeral } from "@/lib/utils/romanNumerals";
 
 interface AllHousesGuideProps {
   houses: House[];
