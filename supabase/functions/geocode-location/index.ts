@@ -1,3 +1,4 @@
+// v2.0.0 - Auth removed for public geocoding
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
