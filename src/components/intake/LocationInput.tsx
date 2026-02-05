@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react"; // Location autocomplete
 import { MapPin, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
