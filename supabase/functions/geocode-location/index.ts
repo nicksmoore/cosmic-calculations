@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 /**
- * Sanitize location query to prevent injection attacks
+ * Sanitize location query to prevent injection attacks.
  * Allows alphanumeric characters, spaces, commas, periods, hyphens, apostrophes,
  * and common international characters for city names
  */
