@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, Box, Circle, Loader2, CheckCircle, AlertCircle, FolderOpen, Globe, BookOpen } from "lucide-react";
+import { Settings, Box, Circle, Globe, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BirthData } from "@/components/intake/BirthDataForm";
 import NatalChartWheel from "@/components/NatalChartWheel";
@@ -13,13 +13,11 @@ import HouseSystemSelector from "@/components/HouseSystemSelector";
 import ZodiacSystemSelector, { ZodiacSystem } from "@/components/ZodiacSystemSelector";
 import UserMenu from "@/components/UserMenu";
 import PodcastUpsell from "@/components/PodcastUpsell";
-import SavedCharts from "@/components/SavedCharts";
 import NatalChartExplainer from "@/components/NatalChartExplainer";
 import { Planet, House } from "@/data/natalChartData";
-import { useAutoSaveChart } from "@/hooks/useChartPdf";
+
 import { useEphemeris } from "@/hooks/useEphemeris";
 import { useAuth } from "@/hooks/useAuth";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface ChartDashboardProps {
   birthData: BirthData;
@@ -34,7 +32,7 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
   const [zodiacSystem, setZodiacSystem] = useState<ZodiacSystem>("tropical");
   const [showSettings, setShowSettings] = useState(false);
   const [viewMode, setViewMode] = useState<"2d" | "3d" | "map">("2d");
-  const [showSavedCharts, setShowSavedCharts] = useState(false);
+  
   const [showExplainer, setShowExplainer] = useState(false);
   
   const { user } = useAuth();
@@ -42,8 +40,6 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
   // Use ephemeris for real calculations
   const { chartData, isCalculated } = useEphemeris(birthData, houseSystem, zodiacSystem);
   
-  // Auto-save PDF when chart is generated (pass auth state)
-  const { pdfState, progress } = useAutoSaveChart(birthData, houseSystem, chartData, !!user);
 
   const handleSelectPlanet = (planet: Planet | null) => {
     setSelectedPlanet(planet);
@@ -82,27 +78,6 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-6 sm:mb-8"
         >
-          {/* Save Status Indicator */}
-          <div className="flex justify-center mb-4">
-            <div className="glass-panel px-4 py-2 rounded-full flex items-center gap-2 text-sm">
-              {pdfState === "generating-script" || pdfState === "generating-pdf" || pdfState === "uploading" ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                  <span className="text-muted-foreground">Saving chart... {Math.round(progress)}%</span>
-                </>
-              ) : pdfState === "ready" ? (
-                <>
-                  <CheckCircle className="w-4 h-4 text-primary" />
-                  <span className="text-muted-foreground">Chart saved</span>
-                </>
-              ) : pdfState === "error" ? (
-                <>
-                  <AlertCircle className="w-4 h-4 text-destructive" />
-                  <span className="text-destructive">Save failed</span>
-                </>
-              ) : null}
-            </div>
-          </div>
 
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif text-ethereal mb-2">
             {birthData.name}'s Cosmic Blueprint
@@ -168,17 +143,6 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
             <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden xs:inline">House</span> System
           </Button>
-          {user && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSavedCharts(true)}
-              className="gap-1 sm:gap-2 glass-panel border-border/50 text-xs sm:text-sm px-2 sm:px-3"
-            >
-              <FolderOpen className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">My</span> Charts
-            </Button>
-          )}
           <Button
             variant={showExplainer ? "default" : "outline"}
             size="sm"
@@ -322,15 +286,6 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
         <PodcastUpsell birthData={birthData} />
       </main>
 
-      {/* Saved Charts Dialog */}
-      <Dialog open={showSavedCharts} onOpenChange={setShowSavedCharts}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>My Saved Charts</DialogTitle>
-          </DialogHeader>
-          <SavedCharts />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
