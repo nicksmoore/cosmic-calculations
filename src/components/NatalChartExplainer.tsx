@@ -19,15 +19,15 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
 
   return (
     <div className="glass-panel rounded-xl p-4 sm:p-6">
-      <div className="mb-4">
+      <div className="mb-6">
         <h2 className="text-xl sm:text-2xl font-serif text-ethereal mb-1">Your Natal Chart Explained</h2>
         <p className="text-sm text-muted-foreground">
           Explore each house of your chart and discover how the planets influence different areas of your life.
         </p>
       </div>
 
-      <ScrollArea className="h-[500px] pr-4">
-        <Accordion type="single" collapsible className="space-y-2">
+      <ScrollArea className="h-[500px] pr-4 scrollbar-cosmic">
+        <Accordion type="single" collapsible className="space-y-3">
           {houses.map((house) => {
             const planetsInHouse = planets.filter((p) => p.house === house.number);
             const planetNames = planetsInHouse.map((p) => p.name);
@@ -37,26 +37,27 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
               <AccordionItem
                 key={house.number}
                 value={`house-${house.number}`}
-                className="border rounded-lg bg-card/80 backdrop-blur-sm px-4"
+                className="border-0 rounded-xl overflow-hidden"
               >
-                <AccordionTrigger className="hover:no-underline py-3">
-                  <div className="flex items-center gap-3 text-left w-full">
-                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-xs shrink-0">
+                <AccordionTrigger className="hover:no-underline px-4 py-4 bg-secondary/80 hover:bg-secondary data-[state=open]:bg-primary/20 transition-colors rounded-xl data-[state=open]:rounded-b-none">
+                  <div className="flex items-center gap-4 text-left w-full">
+                    {/* Roman numeral badge */}
+                    <span className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/30 border border-primary/50 text-foreground font-bold text-lg shrink-0 shadow-lg">
                       {toRomanNumeral(house.number)}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="font-semibold text-foreground">{house.theme}</h4>
-                        <Badge variant="outline" className="text-xs">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h4 className="font-semibold text-foreground text-base">{house.theme}</h4>
+                        <Badge variant="secondary" className="bg-accent/20 text-accent border border-accent/30 font-medium">
                           {house.signSymbol} {house.sign}
                         </Badge>
                       </div>
                       {planetsInHouse.length > 0 && (
-                        <div className="flex items-center gap-1 mt-1">
+                        <div className="flex items-center gap-2 mt-2">
                           {planetsInHouse.map((planet) => (
                             <span
                               key={planet.name}
-                              className="text-sm"
+                              className="text-lg bg-primary/20 rounded-full w-8 h-8 flex items-center justify-center"
                               title={planet.name}
                             >
                               {planet.symbol}
@@ -67,15 +68,15 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
                     </div>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent>
-                  <div className="pl-11 space-y-4 pb-3">
+                <AccordionContent className="bg-card border border-t-0 border-border/50 rounded-b-xl">
+                  <div className="p-5 space-y-5">
                     {/* Sign on Cusp */}
                     {interpretation.signInterpretation && (
                       <div className="space-y-2">
-                        <h5 className="text-sm font-medium text-primary">
+                        <h5 className="text-sm font-semibold text-accent uppercase tracking-wider">
                           {house.sign} on the {getHouseCuspLabel(house.number)}
                         </h5>
-                        <p className="text-sm text-foreground/90 leading-relaxed bg-primary/5 rounded-lg p-3 border border-primary/10">
+                        <p className="text-foreground leading-relaxed bg-accent/10 rounded-lg p-4 border border-accent/20">
                           {interpretation.signInterpretation}
                         </p>
                       </div>
@@ -83,10 +84,10 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
 
                     {/* House Themes */}
                     <div className="space-y-2">
-                      <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         Life Areas
                       </h5>
-                      <p className="text-sm text-foreground/80 leading-relaxed">
+                      <p className="text-foreground/90 leading-relaxed">
                         {house.description}
                       </p>
                     </div>
@@ -94,7 +95,7 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
                     {/* Planets in House */}
                     {planetsInHouse.length > 0 && (
                       <div className="space-y-3">
-                        <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                           Planets in this House
                         </h5>
                         {planetsInHouse.map((planet) => {
@@ -104,22 +105,26 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
                           return (
                             <div
                               key={planet.name}
-                              className="rounded-lg bg-secondary/30 border border-border/30 p-3 space-y-2"
+                              className="rounded-xl bg-secondary/60 border border-border/50 p-4 space-y-3"
                             >
                               <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-lg">{planet.symbol}</span>
-                                  <span className="font-medium text-foreground">{planet.name}</span>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-2xl bg-primary/20 rounded-full w-10 h-10 flex items-center justify-center">
+                                    {planet.symbol}
+                                  </span>
+                                  <span className="font-semibold text-foreground">{planet.name}</span>
                                   {planet.isRetrograde && (
-                                    <span className="text-xs text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded">Rx</span>
+                                    <span className="text-xs text-accent bg-accent/20 px-2 py-0.5 rounded-full border border-accent/30 font-medium">
+                                      Rx
+                                    </span>
                                   )}
                                 </div>
-                                <div className="text-xs text-muted-foreground">
+                                <div className="text-sm text-foreground/70 font-medium">
                                   {Math.floor(planet.degree)}° {planet.signSymbol} {planet.sign}
                                 </div>
                               </div>
                               {planetInterp?.interpretation && (
-                                <p className="text-sm text-foreground/80 leading-relaxed">
+                                <p className="text-foreground/80 leading-relaxed pl-13">
                                   {planetInterp.interpretation}
                                 </p>
                               )}
@@ -131,7 +136,7 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
 
                     {/* Empty House */}
                     {planetsInHouse.length === 0 && (
-                      <div className="text-sm text-muted-foreground italic bg-secondary/20 rounded-lg p-3 border border-border/30">
+                      <div className="text-foreground/70 italic bg-secondary/40 rounded-lg p-4 border border-border/30">
                         No planets currently occupy this house. The {house.sign} energy still colors 
                         the {house.theme.toLowerCase()} area of your life through the sign on the cusp.
                       </div>
