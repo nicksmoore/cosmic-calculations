@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, Box, Circle, Globe, BookOpen } from "lucide-react";
+import { Settings, Box, Circle, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BirthData } from "@/components/intake/BirthDataForm";
 import NatalChartWheel from "@/components/NatalChartWheel";
@@ -33,7 +33,6 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
   const [showSettings, setShowSettings] = useState(false);
   const [viewMode, setViewMode] = useState<"2d" | "3d" | "map">("2d");
   
-  const [showExplainer, setShowExplainer] = useState(false);
   
   const { user } = useAuth();
   
@@ -142,15 +141,6 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
           >
             <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden xs:inline">House</span> System
-          </Button>
-          <Button
-            variant={showExplainer ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowExplainer(!showExplainer)}
-            className="gap-1 sm:gap-2 glass-panel border-border/50 text-xs sm:text-sm px-2 sm:px-3"
-          >
-            <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden xs:inline">Chart</span> Guide
           </Button>
         </div>
 
@@ -268,19 +258,15 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
           )}
         </div>
 
-        {/* Natal Chart Explainer */}
-        <AnimatePresence>
-          {showExplainer && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-8"
-            >
-              <NatalChartExplainer chartData={chartData} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Natal Chart Explainer - Always visible */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-8"
+        >
+          <NatalChartExplainer chartData={chartData} />
+        </motion.div>
 
         {/* Podcast Upsell Section */}
         <PodcastUpsell birthData={birthData} />
