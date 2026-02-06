@@ -13,33 +13,9 @@ serve(async (req) => {
   }
 
   try {
-    // Authentication check
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ error: "Authorization required" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data, error: authError } = await supabaseClient.auth.getUser(token);
-
-    if (authError || !data?.user) {
-      return new Response(
-        JSON.stringify({ error: "Invalid authentication" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     // Mapbox public tokens are intended to be used in client apps.
-    // We still store it as a backend secret so remixes don't break.
+    // We store it as a backend secret so remixes don't break.
+    // No authentication required - this is a public token proxy.
     const mapboxToken =
       Deno.env.get("VITE_MAPBOX_TOKEN") ??
       Deno.env.get("MAPBOX_TOKEN") ??
