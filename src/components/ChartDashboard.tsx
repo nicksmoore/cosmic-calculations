@@ -99,7 +99,7 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
             href="https://substack.com/@holynakamoto/note/c-211239934?r=2hzwh&utm_medium=ios&utm_source=notes-share-action"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary/70 hover:text-primary text-xs sm:text-sm underline underline-offset-4 transition-colors mt-1 inline-block"
+            className="text-yellow-400 hover:text-yellow-300 text-xs sm:text-sm underline underline-offset-4 transition-colors mt-1 inline-block"
           >
             How we calculate position data
           </a>
