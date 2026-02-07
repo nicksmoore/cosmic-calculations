@@ -1,1 +1,4 @@
 project_id = "gfstgychspadmxhkxckc"
+
+[functions.extract-chart-from-pdf]
+verify_jwt = false

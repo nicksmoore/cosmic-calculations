@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, Clock, Calendar, User, Sparkles } from "lucide-react";
+import { ChevronRight, ChevronLeft, Clock, Calendar, User, Sparkles, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import LocationInput from "./LocationInput";
 import UserMenu from "@/components/UserMenu";
+import PdfUpload from "./PdfUpload";
 
 export interface BirthData {
   name: string;
@@ -32,6 +33,7 @@ const steps = [
 
 const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [showUpload, setShowUpload] = useState(false);
   const [formData, setFormData] = useState<BirthData>({
     name: "",
     birthDate: "",
@@ -221,6 +223,12 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
     }
   };
 
+  const handlePdfExtracted = (data: BirthData) => {
+    setFormData(data);
+    setShowUpload(false);
+    onSubmit(data);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
       {/* User Menu - Top Right */}
@@ -229,74 +237,144 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
       </div>
 
       <div className="w-full max-w-lg">
-        {/* Progress Indicator */}
-        <div className="flex justify-center gap-2 mb-12">
-          {steps.map((_, index) => (
-            <div
-              key={index}
-              className={`h-1.5 rounded-full transition-all duration-500 ${
-                index === currentStep
-                  ? "w-8 bg-accent"
-                  : index < currentStep
-                  ? "w-4 bg-accent/60"
-                  : "w-4 bg-muted"
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Step Content */}
         <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-8"
-          >
-            <div className="text-center space-y-2">
-              <h2 className="text-3xl md:text-4xl font-serif text-ethereal">
-                {steps[currentStep].title}
-              </h2>
-              <p className="text-muted-foreground">
-                {steps[currentStep].subtitle}
-              </p>
-            </div>
+          {showUpload ? (
+            <motion.div
+              key="upload"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-8"
+            >
+              <div className="text-center space-y-2">
+                <h2 className="text-3xl md:text-4xl font-serif text-ethereal">
+                  Upload Your Chart
+                </h2>
+                <p className="text-muted-foreground">
+                  AI will extract your birth data automatically
+                </p>
+              </div>
 
-            {renderStep()}
-          </motion.div>
+              <PdfUpload onExtracted={handlePdfExtracted} />
+
+              <div className="text-center">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowUpload(false)}
+                  className="gap-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Enter data manually instead
+                </Button>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="form"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              {/* Progress Indicator */}
+              <div className="flex justify-center gap-2 mb-12">
+                {steps.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                      index === currentStep
+                        ? "w-8 bg-accent"
+                        : index < currentStep
+                        ? "w-4 bg-accent/60"
+                        : "w-4 bg-muted"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Step Content */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-8"
+                >
+                  <div className="text-center space-y-2">
+                    <h2 className="text-3xl md:text-4xl font-serif text-ethereal">
+                      {steps[currentStep].title}
+                    </h2>
+                    <p className="text-muted-foreground">
+                      {steps[currentStep].subtitle}
+                    </p>
+                  </div>
+
+                  {renderStep()}
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Navigation */}
+              <div className="flex justify-between mt-12">
+                <Button
+                  variant="ghost"
+                  onClick={handleBack}
+                  disabled={currentStep === 0}
+                  className="gap-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Back
+                </Button>
+
+                <Button
+                  onClick={handleNext}
+                  className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 nebula-glow"
+                >
+                  {currentStep === steps.length - 1 ? (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Generate Chart
+                    </>
+                  ) : (
+                    <>
+                      Continue
+                      <ChevronRight className="h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Upload PDF Option */}
+              {currentStep === 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="mt-8 text-center"
+                >
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-border/50" />
+                    </div>
+                    <div className="relative flex justify-center">
+                      <span className="bg-background px-4 text-sm text-muted-foreground">
+                        or
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowUpload(true)}
+                    className="mt-4 gap-2 glass-panel border-border/50"
+                  >
+                    <FileUp className="h-4 w-4" />
+                    Upload existing chart PDF
+                  </Button>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
         </AnimatePresence>
-
-        {/* Navigation */}
-        <div className="flex justify-between mt-12">
-          <Button
-            variant="ghost"
-            onClick={handleBack}
-            disabled={currentStep === 0}
-            className="gap-2"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Back
-          </Button>
-
-          <Button
-            onClick={handleNext}
-            className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 nebula-glow"
-          >
-            {currentStep === steps.length - 1 ? (
-              <>
-                <Sparkles className="h-4 w-4" />
-                Generate Chart
-              </>
-            ) : (
-              <>
-                Continue
-                <ChevronRight className="h-4 w-4" />
-              </>
-            )}
-          </Button>
-        </div>
       </div>
     </div>
   );
