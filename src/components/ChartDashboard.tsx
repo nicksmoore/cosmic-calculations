@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, Box, Circle, Globe } from "lucide-react";
+import { Settings, Box, Circle, Globe, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BirthData } from "@/components/intake/BirthDataForm";
 import NatalChartWheel from "@/components/NatalChartWheel";
 import CelestialSphere3D from "@/components/CelestialSphere3D";
@@ -14,6 +15,7 @@ import ZodiacSystemSelector, { ZodiacSystem } from "@/components/ZodiacSystemSel
 import UserMenu from "@/components/UserMenu";
 import PodcastUpsell from "@/components/PodcastUpsell";
 import NatalChartExplainer from "@/components/NatalChartExplainer";
+import AstrologyHistory from "@/components/AstrologyHistory";
 import { Planet, House } from "@/data/natalChartData";
 
 import { useEphemeris } from "@/hooks/useEphemeris";
@@ -105,179 +107,199 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
           </a>
         </motion.header>
 
-        {/* Today's Planetary Transits Bar */}
-        <TodaysPlanetaryBar chartData={chartData} />
+        {/* Main Tabs */}
+        <Tabs defaultValue="chart" className="w-full">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6 sm:mb-8 glass-panel">
+            <TabsTrigger value="chart" className="gap-2 data-[state=active]:bg-primary/20">
+              <Circle className="h-4 w-4" />
+              Your Chart
+            </TabsTrigger>
+            <TabsTrigger value="history" className="gap-2 data-[state=active]:bg-primary/20">
+              <History className="h-4 w-4" />
+              History
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Action Bar */}
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
-          {/* View Mode Toggle */}
-          <div className="flex glass-panel rounded-lg p-1">
-            <Button
-              variant={viewMode === "2d" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("2d")}
-              className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
-            >
-              <Circle className="h-3 w-3 sm:h-4 sm:w-4" />
-              2D
-            </Button>
-            <Button
-              variant={viewMode === "3d" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("3d")}
-              className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
-            >
-              <Box className="h-3 w-3 sm:h-4 sm:w-4" />
-              3D
-            </Button>
-            <Button
-              variant={viewMode === "map" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("map")}
-              className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
-            >
-              <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
-              Map
-            </Button>
-          </div>
+          <TabsContent value="chart" className="mt-0">
+            {/* Today's Planetary Transits Bar */}
+            <TodaysPlanetaryBar chartData={chartData} />
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowSettings(!showSettings)}
-            className="gap-1 sm:gap-2 glass-panel border-border/50 text-xs sm:text-sm px-2 sm:px-3"
-          >
-            <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden xs:inline">House</span> System
-          </Button>
-        </div>
-
-        {/* Zodiac System Selector */}
-        <ZodiacSystemSelector value={zodiacSystem} onChange={setZodiacSystem} />
-
-        {/* House System Selector */}
-        <AnimatePresence>
-          {showSettings && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-8"
-            >
-              <HouseSystemSelector
-                value={houseSystem}
-                onChange={setHouseSystem}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Chart Area */}
-        <div className={`grid gap-4 sm:gap-8 ${viewMode === "map" ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-3"}`}>
-          {/* Chart View */}
-          <div className={viewMode === "map" ? "" : "lg:col-span-2 order-1"}>
-            <AnimatePresence mode="wait">
-              {viewMode === "2d" && (
-                <motion.div
-                  key="2d"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex justify-center px-2 sm:px-0"
+            {/* Action Bar */}
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+              {/* View Mode Toggle */}
+              <div className="flex glass-panel rounded-lg p-1">
+                <Button
+                  variant={viewMode === "2d" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("2d")}
+                  className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
                 >
-                  <NatalChartWheel
-                    onSelectPlanet={handleSelectPlanet}
-                    onSelectHouse={handleSelectHouse}
-                    selectedPlanet={selectedPlanet}
-                    selectedHouse={selectedHouse}
-                    houseSystem={houseSystem}
-                    chartData={chartData}
-                  />
-                </motion.div>
-              )}
-              {viewMode === "3d" && (
-                <motion.div
-                  key="3d"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.3 }}
-                  className="relative aspect-square max-h-[60vh] sm:max-h-none"
+                  <Circle className="h-3 w-3 sm:h-4 sm:w-4" />
+                  2D
+                </Button>
+                <Button
+                  variant={viewMode === "3d" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("3d")}
+                  className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
                 >
-                  <CelestialSphere3D
-                    onSelectPlanet={handleSelectPlanet}
-                    selectedPlanet={selectedPlanet}
-                    houseSystem={houseSystem}
-                    chartData={chartData}
-                  />
-                </motion.div>
-              )}
-              {viewMode === "map" && (
-                <motion.div
-                  key="map"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.3 }}
+                  <Box className="h-3 w-3 sm:h-4 sm:w-4" />
+                  3D
+                </Button>
+                <Button
+                  variant={viewMode === "map" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("map")}
+                  className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
                 >
-                  <AstrocartographyMap
-                    chartData={chartData}
-                    birthData={birthData}
+                  <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
+                  Map
+                </Button>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowSettings(!showSettings)}
+                className="gap-1 sm:gap-2 glass-panel border-border/50 text-xs sm:text-sm px-2 sm:px-3"
+              >
+                <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">House</span> System
+              </Button>
+            </div>
+
+            {/* Zodiac System Selector */}
+            <ZodiacSystemSelector value={zodiacSystem} onChange={setZodiacSystem} />
+
+            {/* House System Selector */}
+            <AnimatePresence>
+              {showSettings && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mb-8"
+                >
+                  <HouseSystemSelector
+                    value={houseSystem}
+                    onChange={setHouseSystem}
                   />
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
 
-          {/* Details Panel - hidden in map mode */}
-          {viewMode !== "map" && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="glass-panel p-4 sm:p-6 rounded-xl h-fit order-2"
-            >
-              {selectedPlanet && <PlanetDetails planet={selectedPlanet} />}
-              {selectedHouse && <HouseDetails house={selectedHouse} planets={chartData.planets} />}
-              {!selectedPlanet && !selectedHouse && (
-                <div className="text-center py-6 sm:py-12">
-                  <p className="text-muted-foreground text-base sm:text-lg font-serif">
-                    {viewMode === "3d" 
-                      ? "Tap a planet in the sphere to reveal its cosmic significance"
-                      : "Tap a planet or house to reveal its cosmic significance"
-                    }
-                  </p>
-                  <div className="mt-4 sm:mt-6 flex flex-wrap justify-center gap-2">
-                    {chartData.planets.slice(0, 5).map((planet) => (
-                      <button
-                        key={planet.name}
-                        onClick={() => handleSelectPlanet(planet)}
-                        className="text-xl sm:text-2xl hover:scale-125 transition-transform p-1"
-                        title={planet.name}
-                      >
-                        {planet.symbol}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+            {/* Chart Area */}
+            <div className={`grid gap-4 sm:gap-8 ${viewMode === "map" ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-3"}`}>
+              {/* Chart View */}
+              <div className={viewMode === "map" ? "" : "lg:col-span-2 order-1"}>
+                <AnimatePresence mode="wait">
+                  {viewMode === "2d" && (
+                    <motion.div
+                      key="2d"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex justify-center px-2 sm:px-0"
+                    >
+                      <NatalChartWheel
+                        onSelectPlanet={handleSelectPlanet}
+                        onSelectHouse={handleSelectHouse}
+                        selectedPlanet={selectedPlanet}
+                        selectedHouse={selectedHouse}
+                        houseSystem={houseSystem}
+                        chartData={chartData}
+                      />
+                    </motion.div>
+                  )}
+                  {viewMode === "3d" && (
+                    <motion.div
+                      key="3d"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.3 }}
+                      className="relative aspect-square max-h-[60vh] sm:max-h-none"
+                    >
+                      <CelestialSphere3D
+                        onSelectPlanet={handleSelectPlanet}
+                        selectedPlanet={selectedPlanet}
+                        houseSystem={houseSystem}
+                        chartData={chartData}
+                      />
+                    </motion.div>
+                  )}
+                  {viewMode === "map" && (
+                    <motion.div
+                      key="map"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <AstrocartographyMap
+                        chartData={chartData}
+                        birthData={birthData}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Details Panel - hidden in map mode */}
+              {viewMode !== "map" && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="glass-panel p-4 sm:p-6 rounded-xl h-fit order-2"
+                >
+                  {selectedPlanet && <PlanetDetails planet={selectedPlanet} />}
+                  {selectedHouse && <HouseDetails house={selectedHouse} planets={chartData.planets} />}
+                  {!selectedPlanet && !selectedHouse && (
+                    <div className="text-center py-6 sm:py-12">
+                      <p className="text-muted-foreground text-base sm:text-lg font-serif">
+                        {viewMode === "3d" 
+                          ? "Tap a planet in the sphere to reveal its cosmic significance"
+                          : "Tap a planet or house to reveal its cosmic significance"
+                        }
+                      </p>
+                      <div className="mt-4 sm:mt-6 flex flex-wrap justify-center gap-2">
+                        {chartData.planets.slice(0, 5).map((planet) => (
+                          <button
+                            key={planet.name}
+                            onClick={() => handleSelectPlanet(planet)}
+                            className="text-xl sm:text-2xl hover:scale-125 transition-transform p-1"
+                            title={planet.name}
+                          >
+                            {planet.symbol}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
               )}
+            </div>
+
+            {/* Natal Chart Explainer - Always visible */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-8"
+            >
+              <NatalChartExplainer chartData={chartData} />
             </motion.div>
-          )}
-        </div>
 
-        {/* Natal Chart Explainer - Always visible */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-8"
-        >
-          <NatalChartExplainer chartData={chartData} />
-        </motion.div>
+            {/* Podcast Upsell Section */}
+            <PodcastUpsell birthData={birthData} />
+          </TabsContent>
 
-        {/* Podcast Upsell Section */}
-        <PodcastUpsell birthData={birthData} />
+          <TabsContent value="history" className="mt-0">
+            <AstrologyHistory />
+          </TabsContent>
+        </Tabs>
       </main>
 
     </div>
