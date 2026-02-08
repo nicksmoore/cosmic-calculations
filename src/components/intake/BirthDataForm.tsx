@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, Clock, Calendar, User, Sparkles, FileUp } from "lucide-react";
+import { ChevronRight, ChevronLeft, Clock, CalendarIcon, User, Sparkles, FileUp } from "lucide-react";
+import { format, parse } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import LocationInput from "./LocationInput";
 import UserMenu from "@/components/UserMenu";
 import PdfUpload from "./PdfUpload";
@@ -131,19 +135,46 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
         );
 
       case 1:
+        const selectedDate = formData.birthDate 
+          ? parse(formData.birthDate, "yyyy-MM-dd", new Date())
+          : undefined;
+        
         return (
           <div className="space-y-4">
-            <div className="relative">
-              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                type="date"
-                value={formData.birthDate}
-                onChange={(e) => updateFormData({ birthDate: e.target.value })}
-                onKeyDown={handleKeyDown}
-                className="pl-12 h-14 text-lg glass-panel border-border/50 focus:border-accent"
-                autoFocus
-              />
-            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full h-14 justify-start text-left text-lg glass-panel border-border/50 hover:border-accent",
+                    !formData.birthDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-3 h-5 w-5 text-muted-foreground" />
+                  {formData.birthDate 
+                    ? format(selectedDate!, "MMMM d, yyyy")
+                    : "Select your birth date"
+                  }
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="center">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => {
+                    if (date) {
+                      updateFormData({ birthDate: format(date, "yyyy-MM-dd") });
+                    }
+                  }}
+                  disabled={(date) => date > new Date()}
+                  defaultMonth={selectedDate || new Date(1990, 0)}
+                  captionLayout="dropdown-buttons"
+                  fromYear={1900}
+                  toYear={new Date().getFullYear()}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
             {errors.birthDate && (
               <p className="text-destructive text-sm">{errors.birthDate}</p>
             )}
