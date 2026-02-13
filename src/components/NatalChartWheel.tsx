@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { zodiacSigns, Planet, House, NatalChartData } from "@/data/natalChartData";
 import { HouseSystem } from "./ChartDashboard";
 import AspectLines from "./AspectLines";
+import SynastryAspectLines from "./SynastryAspectLines";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toRomanNumeral } from "@/lib/utils/romanNumerals";
 
@@ -13,6 +14,8 @@ interface NatalChartWheelProps {
   selectedHouse: House | null;
   houseSystem: HouseSystem;
   chartData: NatalChartData;
+  partnerChartData?: NatalChartData | null;
+  partnerName?: string;
 }
 
 const NatalChartWheel = ({ 
@@ -22,6 +25,8 @@ const NatalChartWheel = ({
   selectedHouse,
   houseSystem,
   chartData,
+  partnerChartData,
+  partnerName,
 }: NatalChartWheelProps) => {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
   const [hoveredHouse, setHoveredHouse] = useState<number | null>(null);
@@ -128,6 +133,48 @@ const NatalChartWheel = ({
     
     return positions;
   }, [chartData.planets, center, houseOuterRadius, houseInnerRadius, isMobile]);
+
+  // Partner planet positions – placed on outer ring between zodiac and house number rings
+  const partnerPlanetPositions = useMemo(() => {
+    if (!partnerChartData) return {};
+    const baseRadius = zodiacInnerRadius - (isMobile ? 2 : 4); // just inside zodiac ring
+    const positions: Record<string, { x: number; y: number }> = {};
+    const sortedPlanets = [...partnerChartData.planets].sort((a, b) => a.longitude - b.longitude);
+    const usedPositions: { angle: number; radius: number }[] = [];
+    const minAngleSeparation = isMobile ? 15 : 10;
+    const ringOffsets = isMobile ? [0, -16, 16] : [0, -30, 30, -60];
+
+    sortedPlanets.forEach((planet) => {
+      let finalRadius = baseRadius;
+      const finalAngle = planet.longitude;
+
+      for (const offset of ringOffsets) {
+        const testRadius = baseRadius + offset;
+        let hasOverlap = false;
+        for (const used of usedPositions) {
+          const angleDiff = Math.abs(finalAngle - used.angle);
+          const normalizedDiff = Math.min(angleDiff, 360 - angleDiff);
+          if (normalizedDiff < minAngleSeparation && Math.abs(testRadius - used.radius) < (isMobile ? 12 : 24)) {
+            hasOverlap = true;
+            break;
+          }
+        }
+        if (!hasOverlap) {
+          finalRadius = testRadius;
+          break;
+        }
+      }
+
+      usedPositions.push({ angle: finalAngle, radius: finalRadius });
+      const rad = ((finalAngle - 90) * Math.PI) / 180;
+      positions[planet.name] = {
+        x: center + finalRadius * Math.cos(rad),
+        y: center + finalRadius * Math.sin(rad),
+      };
+    });
+
+    return positions;
+  }, [partnerChartData, center, zodiacInnerRadius, isMobile]);
 
   const getPlanetPosition = (planetName: string) => {
     return planetPositions[planetName] || { x: center, y: center };
@@ -372,27 +419,101 @@ const NatalChartWheel = ({
               </motion.g>
             );
           })}
+
+          {/* Partner planets overlay (synastry) */}
+          {partnerChartData && partnerChartData.planets.map((planet) => {
+            const pos = partnerPlanetPositions[planet.name];
+            if (!pos) return null;
+            const isSelected = selectedPlanet?.name === `partner_${planet.name}`;
+
+            return (
+              <motion.g
+                key={`partner-${planet.name}`}
+                className="cursor-pointer"
+                onClick={() => onSelectPlanet(isSelected ? null : { ...planet, name: `partner_${planet.name}`, description: `${partnerName || "Partner"}'s ${planet.name}: ${planet.description}` })}
+                initial={false}
+                animate={{ x: pos.x - center, y: pos.y - center }}
+                transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+                style={{ transformOrigin: `${center}px ${center}px` }}
+              >
+                <circle
+                  cx={center}
+                  cy={center}
+                  r={isMobile ? 9 : 14}
+                  fill="hsl(330, 60%, 25%)"
+                  stroke="hsl(330, 70%, 55%)"
+                  strokeWidth={1.5}
+                  strokeDasharray="3,2"
+                />
+                <text
+                  x={center}
+                  y={center}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="fill-foreground"
+                  style={{ fontSize: isMobile ? "8px" : "12px" }}
+                >
+                  {planet.symbol}
+                </text>
+              </motion.g>
+            );
+          })}
+
+          {/* Synastry aspect lines */}
+          {partnerChartData && (
+            <SynastryAspectLines
+              natalPlanets={chartData.planets}
+              partnerPlanets={partnerChartData.planets}
+              center={center}
+              natalPositions={planetPositions}
+              partnerPositions={partnerPlanetPositions}
+            />
+          )}
         </g>
 
         {/* Center text */}
-        <text
-          x={center}
-          y={center - (isMobile ? 6 : 12)}
-          textAnchor="middle"
-          className="fill-foreground font-serif"
-          style={{ fontSize: isMobile ? "10px" : "14px", fontWeight: 500 }}
-        >
-          {houseSystem.charAt(0).toUpperCase() + houseSystem.slice(1).replace("-", " ")}
-        </text>
-        <text
-          x={center}
-          y={center + (isMobile ? 6 : 12)}
-          textAnchor="middle"
-          className="fill-accent"
-          style={{ fontSize: isMobile ? "8px" : "11px", fontWeight: 500 }}
-        >
-          House System
-        </text>
+        {partnerChartData ? (
+          <>
+            <text
+              x={center}
+              y={center - (isMobile ? 6 : 12)}
+              textAnchor="middle"
+              className="fill-foreground font-serif"
+              style={{ fontSize: isMobile ? "9px" : "13px", fontWeight: 500 }}
+            >
+              Synastry
+            </text>
+            <text
+              x={center}
+              y={center + (isMobile ? 6 : 12)}
+              textAnchor="middle"
+              style={{ fontSize: isMobile ? "7px" : "10px", fontWeight: 500, fill: "hsl(330, 70%, 55%)" }}
+            >
+              {partnerName || "Partner"}
+            </text>
+          </>
+        ) : (
+          <>
+            <text
+              x={center}
+              y={center - (isMobile ? 6 : 12)}
+              textAnchor="middle"
+              className="fill-foreground font-serif"
+              style={{ fontSize: isMobile ? "10px" : "14px", fontWeight: 500 }}
+            >
+              {houseSystem.charAt(0).toUpperCase() + houseSystem.slice(1).replace("-", " ")}
+            </text>
+            <text
+              x={center}
+              y={center + (isMobile ? 6 : 12)}
+              textAnchor="middle"
+              className="fill-accent"
+              style={{ fontSize: isMobile ? "8px" : "11px", fontWeight: 500 }}
+            >
+              House System
+            </text>
+          </>
+        )}
       </motion.svg>
     </div>
   );
