@@ -16,6 +16,7 @@ import UserMenu from "@/components/UserMenu";
 import PodcastUpsell from "@/components/PodcastUpsell";
 import NatalChartExplainer from "@/components/NatalChartExplainer";
 import AstrologyHistory from "@/components/AstrologyHistory";
+import SynastryPartnerForm from "@/components/SynastryPartnerForm";
 import { Planet, House } from "@/data/natalChartData";
 
 import { useEphemeris } from "@/hooks/useEphemeris";
@@ -34,12 +35,14 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
   const [zodiacSystem, setZodiacSystem] = useState<ZodiacSystem>("tropical");
   const [showSettings, setShowSettings] = useState(false);
   const [viewMode, setViewMode] = useState<"2d" | "3d" | "map">("2d");
+  const [partnerData, setPartnerData] = useState<BirthData | null>(null);
   
   
   const { user } = useAuth();
   
   // Use ephemeris for real calculations
   const { chartData, isCalculated } = useEphemeris(birthData, houseSystem, zodiacSystem);
+  const { chartData: partnerChartData } = useEphemeris(partnerData, houseSystem, zodiacSystem);
   
 
   const handleSelectPlanet = (planet: Planet | null) => {
@@ -166,6 +169,13 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
                 <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden xs:inline">House</span> System
               </Button>
+
+              {/* Synastry */}
+              <SynastryPartnerForm
+                onSubmit={setPartnerData}
+                onClear={() => setPartnerData(null)}
+                partnerData={partnerData}
+              />
             </div>
 
             {/* Zodiac System Selector */}
@@ -209,6 +219,8 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
                         selectedHouse={selectedHouse}
                         houseSystem={houseSystem}
                         chartData={chartData}
+                        partnerChartData={partnerChartData}
+                        partnerName={partnerData?.name}
                       />
                     </motion.div>
                   )}
