@@ -18,6 +18,7 @@ import NatalChartExplainer from "@/components/NatalChartExplainer";
 import AstrologyHistory from "@/components/AstrologyHistory";
 import SynastryPartnerForm from "@/components/SynastryPartnerForm";
 import CompatibilityScorecard from "@/components/CompatibilityScorecard";
+import DailyInsightPanel from "@/components/DailyInsightPanel";
 import { Planet, House } from "@/data/natalChartData";
 
 import { useEphemeris } from "@/hooks/useEphemeris";
@@ -125,6 +126,9 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
           </TabsList>
 
           <TabsContent value="chart" className="mt-0">
+            {/* AI Daily Insight + Life Events */}
+            <DailyInsightPanel chartData={chartData} />
+
             {/* Today's Planetary Transits Bar */}
             <TodaysPlanetaryBar chartData={chartData} />
 
