@@ -32,7 +32,7 @@ const AuthGate = ({ children }: AuthGateProps) => {
 
           <div>
             <h1 className="text-3xl md:text-4xl font-serif text-ethereal mb-2">
-              CelestialSync
+              Cosmic Calculations
             </h1>
             <p className="text-muted-foreground">
               Discover your cosmic blueprint with personalized natal chart readings
