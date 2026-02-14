@@ -17,6 +17,7 @@ import PodcastUpsell from "@/components/PodcastUpsell";
 import NatalChartExplainer from "@/components/NatalChartExplainer";
 import AstrologyHistory from "@/components/AstrologyHistory";
 import SynastryPartnerForm from "@/components/SynastryPartnerForm";
+import CompatibilityScorecard from "@/components/CompatibilityScorecard";
 import { Planet, House } from "@/data/natalChartData";
 
 import { useEphemeris } from "@/hooks/useEphemeris";
@@ -293,6 +294,16 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
                 </motion.div>
               )}
             </div>
+
+            {/* Compatibility Scorecard - shown when synastry partner is active */}
+            {partnerData && partnerChartData && (
+              <CompatibilityScorecard
+                natalPlanets={chartData.planets}
+                partnerPlanets={partnerChartData.planets}
+                partnerName={partnerData.name}
+                userName={birthData.name}
+              />
+            )}
 
             {/* Natal Chart Explainer - Always visible */}
             <motion.div
