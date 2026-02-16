@@ -96,14 +96,29 @@ function findPlanet(planets: Planet[], name: string): Planet | undefined {
   );
 }
 
+/** Sign-based elemental harmony (0-1) */
+function elementalAffinity(long1: number, long2: number): number {
+  const sign1 = Math.floor(((long1 % 360) + 360) % 360 / 30);
+  const sign2 = Math.floor(((long2 % 360) + 360) % 360 / 30);
+  const elements = ["Fire", "Earth", "Air", "Water"];
+  const el1 = elements[sign1 % 4];
+  const el2 = elements[sign2 % 4];
+
+  if (el1 === el2) return 0.7; // same element
+  // compatible elements: Fire-Air, Earth-Water
+  if ((el1 === "Fire" && el2 === "Air") || (el1 === "Air" && el2 === "Fire")) return 0.5;
+  if ((el1 === "Earth" && el2 === "Water") || (el1 === "Water" && el2 === "Earth")) return 0.5;
+  return 0.2; // incompatible
+}
+
 function scoreCategoryFromLongitudes(
   natalLongs: Record<string, number>,
   partnerLongs: Record<string, number>,
   config: typeof CATEGORY_CONFIG[number],
 ): CompatibilityCategory {
   const aspectList: string[] = [];
-  let total = 0;
-  let maxPossible = 0;
+  let pairCount = 0;
+  let totalScore = 0;
 
   for (const n of config.pairs[0]) {
     const nLong = natalLongs[n];
@@ -111,22 +126,28 @@ function scoreCategoryFromLongitudes(
     for (const p of config.pairs[1]) {
       const pLong = partnerLongs[p];
       if (pLong == null) continue;
-      maxPossible += 8;
+      pairCount++;
+
       const dist = angleBetween(nLong, pLong);
       const result = aspectScore(dist);
+
       if (result) {
-        total += result.weight;
+        // Aspect found – score based on weight (max 8)
+        totalScore += (result.weight / 8) * 100;
         aspectList.push(`${n} ${result.name} ${p}`);
+      } else {
+        // No major aspect – use elemental affinity as baseline
+        totalScore += elementalAffinity(nLong, pLong) * 45;
       }
     }
   }
 
-  const score = maxPossible > 0 ? Math.round((total / maxPossible) * 100) : 50;
+  const score = pairCount > 0 ? Math.round(totalScore / pairCount) : 50;
   return {
     label: config.label,
     emoji: config.emoji,
     description: config.description,
-    score: Math.min(score, 100),
+    score: Math.max(5, Math.min(score, 98)),
     aspects: aspectList,
   };
 }
@@ -208,9 +229,10 @@ export function findCelebrityCrush(natalPlanets: Planet[]): CelebrityCrush {
     }
   }
 
+  // Normalize: 6 crush pairs, max weight 8 each = 48 theoretical max
   return {
     celebrity: bestCeleb,
-    score: Math.min(Math.round((bestScore / 30) * 100), 100),
+    score: Math.max(10, Math.min(Math.round((bestScore / 28) * 100), 98)),
     topAspect: bestAspect || "Cosmic intrigue ✨",
   };
 }
