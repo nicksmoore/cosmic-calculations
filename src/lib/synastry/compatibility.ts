@@ -104,11 +104,11 @@ function elementalAffinity(long1: number, long2: number): number {
   const el1 = elements[sign1 % 4];
   const el2 = elements[sign2 % 4];
 
-  if (el1 === el2) return 0.7; // same element
+  if (el1 === el2) return 1.0; // same element
   // compatible elements: Fire-Air, Earth-Water
-  if ((el1 === "Fire" && el2 === "Air") || (el1 === "Air" && el2 === "Fire")) return 0.5;
-  if ((el1 === "Earth" && el2 === "Water") || (el1 === "Water" && el2 === "Earth")) return 0.5;
-  return 0.2; // incompatible
+  if ((el1 === "Fire" && el2 === "Air") || (el1 === "Air" && el2 === "Fire")) return 0.8;
+  if ((el1 === "Earth" && el2 === "Water") || (el1 === "Water" && el2 === "Earth")) return 0.8;
+  return 0.35; // incompatible
 }
 
 function scoreCategoryFromLongitudes(
@@ -137,7 +137,7 @@ function scoreCategoryFromLongitudes(
         aspectList.push(`${n} ${result.name} ${p}`);
       } else {
         // No major aspect – use elemental affinity as baseline
-        totalScore += elementalAffinity(nLong, pLong) * 45;
+        totalScore += elementalAffinity(nLong, pLong) * 65;
       }
     }
   }
