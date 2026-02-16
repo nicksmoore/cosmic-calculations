@@ -7,6 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import GlossaryTerm from "@/components/GlossaryPopover";
 
 import { toRomanNumeral, getHouseCuspLabel } from "@/lib/utils/romanNumerals";
 
@@ -113,10 +114,12 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
                                 </span>
                                 <span className="font-semibold text-foreground">{planet.name}</span>
                                 {planet.isRetrograde && (
-                                  <span className="text-xs text-accent bg-accent/20 px-2 py-0.5 rounded-full border border-accent/30 font-medium">
-                                    Rx
-                                  </span>
-                                )}
+                                    <GlossaryTerm term="retrograde">
+                                      <span className="text-xs text-accent bg-accent/20 px-2 py-0.5 rounded-full border border-accent/30 font-medium">
+                                        Rx
+                                      </span>
+                                    </GlossaryTerm>
+                                  )}
                               </div>
                               <div className="text-sm text-foreground/70 font-medium">
                                 {Math.floor(planet.degree)}° {planet.signSymbol} {planet.sign}
@@ -134,10 +137,10 @@ const NatalChartExplainer = ({ chartData }: NatalChartExplainerProps) => {
                   )}
 
                   {/* Empty House */}
-                  {planetsInHouse.length === 0 && (
+                {planetsInHouse.length === 0 && (
                     <div className="text-foreground/70 italic bg-secondary/40 rounded-lg p-4 border border-border/30">
                       No planets currently occupy this house. The {house.sign} energy still colors 
-                      the {house.theme.toLowerCase()} area of your life through the sign on the cusp.
+                      the {house.theme.toLowerCase()} area of your life through the sign on the <GlossaryTerm term="cusp">cusp</GlossaryTerm>.
                     </div>
                   )}
                 </div>

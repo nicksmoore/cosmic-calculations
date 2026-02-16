@@ -15,6 +15,7 @@ import ZodiacSystemSelector, { ZodiacSystem } from "@/components/ZodiacSystemSel
 import UserMenu from "@/components/UserMenu";
 import PodcastUpsell from "@/components/PodcastUpsell";
 import NatalChartExplainer from "@/components/NatalChartExplainer";
+import ChartBadges from "@/components/ChartBadges";
 import AstrologyHistory from "@/components/AstrologyHistory";
 import SynastryPartnerForm from "@/components/SynastryPartnerForm";
 import CompatibilityScorecard from "@/components/CompatibilityScorecard";
@@ -308,6 +309,16 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
                 userName={birthData.name}
               />
             )}
+
+            {/* Chart Treasure Hunt Badges */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45 }}
+              className="mt-8"
+            >
+              <ChartBadges planets={chartData.planets} />
+            </motion.div>
 
             {/* Natal Chart Explainer - Always visible */}
             <motion.div
