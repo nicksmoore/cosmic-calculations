@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings, Box, Circle, Globe, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { Planet, House } from "@/data/natalChartData";
 
 import { useEphemeris } from "@/hooks/useEphemeris";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ChartDashboardProps {
   birthData: BirthData;
@@ -46,7 +47,33 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
   // Use ephemeris for real calculations
   const { chartData, isCalculated } = useEphemeris(birthData, houseSystem, zodiacSystem);
   const { chartData: partnerChartData } = useEphemeris(partnerData, houseSystem, zodiacSystem);
-  
+
+  // Auto-save Big Three to profile when chart is calculated
+  useEffect(() => {
+    if (!chartData || !user) return;
+    const sun = chartData.planets.find(p => p.name === "Sun");
+    const moon = chartData.planets.find(p => p.name === "Moon");
+    const rising = chartData.angles.ascendant;
+    if (!sun || !moon || !rising) return;
+
+    (supabase as any)
+      .from("profiles")
+      .update({
+        sun_sign: sun.sign,
+        moon_sign: moon.sign,
+        rising_sign: rising.sign,
+        birth_date: birthData.birthDate,
+        birth_time: birthData.timeUnknown ? null : birthData.birthTime,
+        birth_location: birthData.location || null,
+        birth_lat: birthData.latitude || null,
+        birth_lng: birthData.longitude || null,
+        time_unknown: birthData.timeUnknown || false,
+      })
+      .eq("user_id", user.id)
+      .then(({ error }: any) => {
+        if (error) console.error("Failed to save Big Three:", error);
+      });
+  }, [chartData, user, birthData]);
 
   const handleSelectPlanet = (planet: Planet | null) => {
     setSelectedPlanet(planet);

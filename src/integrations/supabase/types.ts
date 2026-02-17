@@ -50,6 +50,81 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          birth_date: string | null
+          birth_lat: number | null
+          birth_lng: number | null
+          birth_location: string | null
+          birth_time: string | null
+          created_at: string
+          current_status: string | null
+          display_name: string | null
+          id: string
+          is_public: boolean | null
+          mars_bio: string | null
+          mercury_bio: string | null
+          moon_sign: string | null
+          rising_sign: string | null
+          status_updated_at: string | null
+          sun_sign: string | null
+          time_unknown: boolean | null
+          updated_at: string
+          user_id: string
+          venus_bio: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          birth_date?: string | null
+          birth_lat?: number | null
+          birth_lng?: number | null
+          birth_location?: string | null
+          birth_time?: string | null
+          created_at?: string
+          current_status?: string | null
+          display_name?: string | null
+          id?: string
+          is_public?: boolean | null
+          mars_bio?: string | null
+          mercury_bio?: string | null
+          moon_sign?: string | null
+          rising_sign?: string | null
+          status_updated_at?: string | null
+          sun_sign?: string | null
+          time_unknown?: boolean | null
+          updated_at?: string
+          user_id: string
+          venus_bio?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          birth_date?: string | null
+          birth_lat?: number | null
+          birth_lng?: number | null
+          birth_location?: string | null
+          birth_time?: string | null
+          created_at?: string
+          current_status?: string | null
+          display_name?: string | null
+          id?: string
+          is_public?: boolean | null
+          mars_bio?: string | null
+          mercury_bio?: string | null
+          moon_sign?: string | null
+          rising_sign?: string | null
+          status_updated_at?: string | null
+          sun_sign?: string | null
+          time_unknown?: boolean | null
+          updated_at?: string
+          user_id?: string
+          venus_bio?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
