@@ -1,4 +1,5 @@
 import { LogOut, User, FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const UserMenu = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   if (!user) return null;
 
@@ -59,10 +61,9 @@ const UserMenu = () => {
           <span>My Charts</span>
           <span className="ml-auto text-xs text-muted-foreground">Soon</span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" disabled>
+        <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/profile")}>
           <User className="mr-2 h-4 w-4" />
-          <span>Profile</span>
-          <span className="ml-auto text-xs text-muted-foreground">Soon</span>
+          <span>Astro-Profile</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive focus:text-destructive">
