@@ -1,69 +1,27 @@
-import { useState, useEffect, useCallback } from "react";
-import { User, Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { useCallback } from "react";
+import { useUser, useClerk } from "@clerk/clerk-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface UseAuthReturn {
-  user: User | null;
-  session: Session | null;
+  user: { id: string; email: string | null; name: string | null; avatar: string | null } | null;
+  session: null;
   isLoading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 export function useAuth(): UseAuthReturn {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoaded } = useUser();
+  const { openSignIn, signOut: clerkSignOut } = useClerk();
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Set up auth state listener BEFORE getting session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setIsLoading(false);
-      }
-    );
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
   const signInWithGoogle = useCallback(async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: window.location.origin,
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-    } catch (err) {
-      console.error("Google sign-in error:", err);
-      toast({
-        variant: "destructive",
-        title: "Sign in failed",
-        description: err instanceof Error ? err.message : "Could not sign in with Google",
-      });
-    }
-  }, [toast]);
+    openSignIn({ redirectUrl: window.location.href });
+  }, [openSignIn]);
 
   const signOut = useCallback(async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-
+      await clerkSignOut({ redirectUrl: window.location.origin });
       toast({
         title: "Signed out",
         description: "You have been signed out successfully.",
@@ -76,12 +34,19 @@ export function useAuth(): UseAuthReturn {
         description: err instanceof Error ? err.message : "Could not sign out",
       });
     }
-  }, [toast]);
+  }, [clerkSignOut, toast]);
 
   return {
-    user,
-    session,
-    isLoading,
+    user: user
+      ? {
+          id: user.id,
+          email: user.primaryEmailAddress?.emailAddress ?? null,
+          name: user.fullName,
+          avatar: user.imageUrl,
+        }
+      : null,
+    session: null,
+    isLoading: !isLoaded,
     signInWithGoogle,
     signOut,
   };
