@@ -7,6 +7,7 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import Index from "./pages/Index";
 import TransitDetail from "./pages/TransitDetail";
 import Profile from "./pages/Profile";
+import Feed from "./pages/Feed";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/transit" element={<TransitDetail />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/feed" element={<Feed />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

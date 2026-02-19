@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, Box, Circle, Globe, History } from "lucide-react";
+import { Settings, Box, Circle, Globe, History, MessageSquare } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BirthData } from "@/components/intake/BirthDataForm";
@@ -106,6 +107,17 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
 
   return (
     <div className="min-h-screen relative">
+      {/* Feed Link - Top Left */}
+      <div className="fixed top-4 left-4 z-50">
+        <Link
+          to="/feed"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors glass-panel px-3 py-1.5 rounded-lg"
+        >
+          <MessageSquare className="h-4 w-4" />
+          Feed
+        </Link>
+      </div>
+
       {/* User Menu - Top Right */}
       <div className="fixed top-4 right-4 z-50">
         <UserMenu />
