@@ -74,6 +74,8 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
       case 3:
         if (!formData.location.trim()) {
           newErrors.location = "Please enter your birth location";
+        } else if (!formData.latitude || !formData.longitude) {
+          newErrors.location = "Please select a location from the dropdown";
         }
         break;
     }

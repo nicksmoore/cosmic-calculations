@@ -41,15 +41,11 @@ const LocationInput = ({ value, onChange, onKeyDown }: LocationInputProps) => {
 
     setIsLoading(true);
     try {
-      // Proxy through backend to satisfy Nominatim's User-Agent requirement reliably in production.
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/geocode-location?q=${encodeURIComponent(
-          searchQuery
-        )}&limit=5`,
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=5&addressdetails=1`,
         {
           headers: {
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            "Accept-Language": "en",
           },
         }
       );
@@ -59,7 +55,6 @@ const LocationInput = ({ value, onChange, onKeyDown }: LocationInputProps) => {
         setSuggestions(data);
         setShowSuggestions(true);
       } else {
-        console.warn("Nominatim response not ok:", response.status);
         setSuggestions([]);
       }
     } catch (error) {
