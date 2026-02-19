@@ -87,11 +87,18 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
 
   // Handle case when chart data isn't ready
   if (!chartData) {
+    const missingCoords = !birthData.latitude || !birthData.longitude;
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-          <p className="text-muted-foreground">Calculating your chart...</p>
+          {missingCoords ? (
+            <p className="text-destructive">Missing birth coordinates — please go back and select a location from the dropdown.</p>
+          ) : (
+            <>
+              <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+              <p className="text-muted-foreground">Calculating your chart...</p>
+            </>
+          )}
         </div>
       </div>
     );
