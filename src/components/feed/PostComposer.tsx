@@ -80,7 +80,7 @@ export default function PostComposer({ chartData }: PostComposerProps) {
   const collectiveTag: TransitTag | null = dailyTransits
     ? {
         transit_key:       dailyTransits.transit_key,
-        transiting_planet: dailyTransits.dominant_transit.split(" ")[0],
+        transiting_planet: dailyTransits.transits.find(t => t.transit_key === dailyTransits.transit_key)?.transiting_planet ?? dailyTransits.dominant_transit.split(" ")[0],
         aspect:            "collective",
         natal_point:       "collective",
         display_name:      dailyTransits.dominant_transit,
