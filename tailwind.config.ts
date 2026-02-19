@@ -61,7 +61,7 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // CelestialSync custom colors
+        // Cosmic Connections custom colors
         nebula: {
           DEFAULT: "hsl(var(--nebula))",
           glow: "hsl(var(--nebula-glow))",

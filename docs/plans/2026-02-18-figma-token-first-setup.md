@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Establish a design-first Figma workflow by exporting all CelestialSync design tokens into a Figma-importable `tokens.json`, scaffolding Code Connect stubs for all 25 components, and documenting the design→implement loop.
+**Goal:** Establish a design-first Figma workflow by exporting all Cosmic Connections design tokens into a Figma-importable `tokens.json`, scaffolding Code Connect stubs for all 25 components, and documenting the design→implement loop.
 
 **Architecture:** Extract CSS variables and Tailwind config into Token Studio JSON → user imports via Tokens Studio Figma plugin → sets up Figma Variables. Code Connect stubs scaffold the component-to-Figma link so the MCP plugin generates real component code. A workflow cheatsheet documents the ongoing loop.
 
@@ -763,7 +763,7 @@ git commit -m "feat(figma): add Code Connect stubs for form and selector compone
 Create `docs/figma-workflow.md`:
 
 ```markdown
-# CelestialSync × Figma Workflow
+# Cosmic Connections × Figma Workflow
 
 ## One-Time Setup
 
@@ -771,7 +771,7 @@ Create `docs/figma-workflow.md`:
 1. Open Figma Desktop
 2. Install **Tokens Studio for Figma** (free, from Figma Community)
 3. Open the plugin → **Load from File** → select `figma/tokens.json`
-4. Click **Sync Variables** — your Figma Variables panel now has all CelestialSync tokens
+4. Click **Sync Variables** — your Figma Variables panel now has all Cosmic Connections tokens
 
 ### 2. Publish Code Connect (after creating your Figma component library)
 ```bash

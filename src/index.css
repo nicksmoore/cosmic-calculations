@@ -4,7 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CelestialSync 3D Design System - "Modern Ethereal" */
+/* Cosmic Connections 3D Design System - "Modern Ethereal" */
 
 @layer base {
   :root {
@@ -56,7 +56,7 @@
     --sidebar-border: 275 30% 20%;
     --sidebar-ring: 275 80% 40%;
 
-    /* Custom CelestialSync Tokens */
+    /* Custom Cosmic Connections Tokens */
     --nebula: 275 100% 25%;
     --nebula-glow: 275 80% 40%;
     --gold: 45 100% 50%;

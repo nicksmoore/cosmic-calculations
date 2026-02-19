@@ -1,12 +1,12 @@
 # Astro-Feed (Transit Feed) Design
 
 **Date:** 2026-02-19
-**Project:** CelestialSync (cosmic-calculations)
+**Project:** Cosmic Connections (cosmic-calculations)
 **Phase:** Social — Phase 2B (Transit Feed first)
 
 ## Goal
 
-Transform CelestialSync from a calculation utility into a daily-use social destination. The Transit Feed is the "daily hook" — a global post stream where every entry is automatically tagged with the user's active personal transits plus the collective day's dominant transit energy. Over time, users discover their own patterns: "I always post about being drained when Saturn is within 3° of my natal Moon."
+Transform Cosmic Connections from a calculation utility into a daily-use social destination. The Transit Feed is the "daily hook" — a global post stream where every entry is automatically tagged with the user's active personal transits plus the collective day's dominant transit energy. Over time, users discover their own patterns: "I always post about being drained when Saturn is within 3° of my natal Moon."
 
 ---
 
