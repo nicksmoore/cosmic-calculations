@@ -60,8 +60,9 @@ function CommentsSection({ postId }: { postId: string }) {
     try {
       await addComment.mutateAsync(newComment.trim());
       setNewComment("");
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Comment failed", description: err.message });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      toast({ variant: "destructive", title: "Comment failed", description: message });
     }
   };
 
@@ -92,7 +93,7 @@ function CommentsSection({ postId }: { postId: string }) {
       ))}
       {(comments?.length ?? 0) > 3 && (
         <p className="text-xs text-muted-foreground">
-          + {comments!.length - 3} more
+          + {(comments?.length ?? 0) - 3} more
         </p>
       )}
       {user && (
@@ -109,6 +110,7 @@ function CommentsSection({ postId }: { postId: string }) {
             variant="ghost"
             onClick={handleSubmit}
             disabled={!newComment.trim() || addComment.isPending}
+            aria-label="Submit comment"
             className="h-8 px-2 flex-shrink-0"
           >
             {addComment.isPending ? (
@@ -136,12 +138,12 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
 
   const handleLike = async () => {
     if (!user) return;
-    const nextLiked = !isLiked;
-    setIsLiked(nextLiked);
+    const originalLiked = isLiked;
+    setIsLiked(!isLiked);
     try {
-      await toggleLike.mutateAsync({ postId: post.id, isLiked });
+      await toggleLike.mutateAsync({ postId: post.id, isLiked: originalLiked });
     } catch {
-      setIsLiked(isLiked);
+      setIsLiked(originalLiked);
     }
   };
 
@@ -212,6 +214,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
         <button
           onClick={handleLike}
           disabled={!user || toggleLike.isPending}
+          aria-label={`Like post, ${post.likes_count + (isLiked ? 1 : 0)} likes`}
           className={`flex items-center gap-1.5 text-xs transition-colors ${
             isLiked
               ? "text-rose-400"
@@ -224,6 +227,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
 
         <button
           onClick={() => setShowComments((v) => !v)}
+          aria-label={`${showComments ? "Hide" : "Show"} comments, ${post.comments_count}`}
           className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <MessageCircle className="h-4 w-4" />

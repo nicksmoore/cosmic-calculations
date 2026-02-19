@@ -104,12 +104,9 @@ export default function PostComposer({ chartData }: PostComposerProps) {
       setPersonalTags([]);
       setTagsComputed(false);
       toast({ title: "Posted to the cosmos ✨" });
-    } catch (err: any) {
-      toast({
-        variant: "destructive",
-        title: "Post failed",
-        description: err.message ?? "Something went wrong",
-      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      toast({ variant: "destructive", title: "Post failed", description: message });
     }
   };
 
