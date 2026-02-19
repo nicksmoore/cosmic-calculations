@@ -87,6 +87,13 @@ function CollectiveForecastSheet({
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-lg font-serif text-ethereal mb-4">Collective Forecast</h3>
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Close forecast"
+        >
+          ✕
+        </button>
         {transits.length === 0 && (
           <p className="text-muted-foreground text-sm">A quiet cosmic day — ideal for inner reflection.</p>
         )}
@@ -125,7 +132,11 @@ export default function DailyHookCard() {
           background: "linear-gradient(135deg, #1a0533 0%, #0d1b4b 50%, #0a2a1a 100%)",
           boxShadow: "0 0 20px rgba(168, 85, 247, 0.3)",
         }}
+        role="button"
+        tabIndex={0}
+        aria-label="Open collective forecast"
         onClick={() => setShowSheet(true)}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setShowSheet(true); } }}
       >
         <div className="p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-1">
