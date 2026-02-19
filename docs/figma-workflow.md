@@ -1,4 +1,4 @@
-# CelestialSync × Figma Workflow
+# Cosmic Connections × Figma Workflow
 
 ## One-Time Setup
 
@@ -6,7 +6,7 @@
 1. Open Figma Desktop
 2. Install **Tokens Studio for Figma** (free, from Figma Community)
 3. Open the plugin → **Load from File** → select `figma/tokens.json`
-4. Click **Sync Variables** — your Figma Variables panel now has all CelestialSync tokens
+4. Click **Sync Variables** — your Figma Variables panel now has all Cosmic Connections tokens
 
 ### 2. Publish Code Connect (after creating your Figma component library)
 ```bash

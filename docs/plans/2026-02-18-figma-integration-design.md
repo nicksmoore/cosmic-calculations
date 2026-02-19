@@ -1,7 +1,7 @@
 # Figma Integration Design
 
 **Date:** 2026-02-18
-**Project:** CelestialSync (cosmic-calculations)
+**Project:** Cosmic Connections (cosmic-calculations)
 **Approach:** Token-First Foundation
 
 ## Goal
