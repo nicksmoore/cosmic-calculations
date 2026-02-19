@@ -1,4 +1,4 @@
-import { LogOut, User, FileText } from "lucide-react";
+import { LogOut, User, FileText, Compass } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
@@ -56,6 +56,10 @@ const UserMenu = () => {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/discover")}>
+          <Compass className="mr-2 h-4 w-4" />
+          <span>Discover</span>
+        </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" disabled>
           <FileText className="mr-2 h-4 w-4" />
           <span>My Charts</span>
