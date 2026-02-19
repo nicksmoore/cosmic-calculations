@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Globe, Lock } from "lucide-react";
@@ -44,6 +45,7 @@ interface ProfileCardProps {
 }
 
 export default function ProfileCard({ profile, index }: ProfileCardProps) {
+  const navigate = useNavigate();
   const sunElement = profile.sun_sign ? ELEMENTS[profile.sun_sign] : null;
 
   return (
@@ -51,6 +53,7 @@ export default function ProfileCard({ profile, index }: ProfileCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
+      onClick={() => navigate(`/profile/${profile.id}`)}
       className="glass-panel p-5 rounded-xl cosmic-border hover:nebula-glow transition-shadow duration-300 cursor-pointer group"
     >
       {/* Header */}
