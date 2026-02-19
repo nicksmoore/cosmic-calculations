@@ -9,6 +9,7 @@ import TransitDetail from "./pages/TransitDetail";
 import Profile from "./pages/Profile";
 import Discover from "./pages/Discover";
 import PublicProfile from "./pages/PublicProfile";
+import Feed from "./pages/Feed";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/discover" element={<Discover />} />
             <Route path="/profile/:id" element={<PublicProfile />} />
+            <Route path="/feed" element={<Feed />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
