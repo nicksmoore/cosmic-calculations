@@ -61,7 +61,7 @@ serve(async (req) => {
       )}&limit=${limit}&addressdetails=1`,
       {
         headers: {
-          "User-Agent": "CelestialSync/1.0 (Lovable Cloud)",
+          "User-Agent": "Cosmic Connections/1.0",
           Accept: "application/json",
         },
       }
