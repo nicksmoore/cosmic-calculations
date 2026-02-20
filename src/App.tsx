@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { ClerkProvider } from "@clerk/clerk-react";
 import AuthGuard from "@/components/AuthGuard";
 import BottomNav from "@/components/BottomNav";
+import PostComposerSheet from "@/components/PostComposerSheet";
 import RootRedirect from "./pages/RootRedirect";
 import SignInPage from "./pages/SignIn";
 import Onboarding from "./pages/Onboarding";
@@ -28,6 +29,7 @@ function AuthedLayout() {
     <>
       <Outlet context={{ postOpen, setPostOpen }} />
       <BottomNav onOpenPost={() => setPostOpen(true)} />
+      <PostComposerSheet open={postOpen} onOpenChange={setPostOpen} />
     </>
   );
 }

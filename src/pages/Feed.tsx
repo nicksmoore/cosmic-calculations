@@ -2,7 +2,6 @@ import { useRef, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import TodaysPlanetaryBar from "@/components/TodaysPlanetaryBar";
 import DailyHookCard from "@/components/feed/DailyHookCard";
-import PostComposer from "@/components/feed/PostComposer";
 import PostCard from "@/components/feed/PostCard";
 import { useFeed } from "@/hooks/useFeed";
 import { useAuth } from "@/hooks/useAuth";
@@ -103,9 +102,6 @@ export default function Feed() {
 
         {/* Sticky Daily Hook */}
         <DailyHookCard />
-
-        {/* Post Composer (only if birth data is loaded) */}
-        <PostComposer chartData={chartData} />
 
         {/* Feed */}
         <FeedList />
