@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { ClerkProvider } from "@clerk/clerk-react";
 import AuthGuard from "@/components/AuthGuard";
+import BottomNav from "@/components/BottomNav";
 import RootRedirect from "./pages/RootRedirect";
 import SignInPage from "./pages/SignIn";
 import Onboarding from "./pages/Onboarding";
@@ -13,13 +15,29 @@ import Profile from "./pages/Profile";
 import Discover from "./pages/Discover";
 import PublicProfile from "./pages/PublicProfile";
 import Feed from "./pages/Feed";
+import Match from "./pages/Match";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
+function AuthedLayout() {
+  const [postOpen, setPostOpen] = useState(false);
+
+  return (
+    <>
+      <Outlet context={{ postOpen, setPostOpen }} />
+      <BottomNav onOpenPost={() => setPostOpen(true)} />
+    </>
+  );
+}
+
 const App = () => (
-  <ClerkProvider publishableKey={clerkKey}>
+  <ClerkProvider
+    publishableKey={clerkKey}
+    signInForceRedirectUrl="/feed"
+    signUpForceRedirectUrl="/onboarding"
+  >
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
@@ -37,45 +55,19 @@ const App = () => (
               }
             />
             <Route
-              path="/feed"
               element={
                 <AuthGuard>
-                  <Feed />
+                  <AuthedLayout />
                 </AuthGuard>
               }
-            />
-            <Route
-              path="/profile"
-              element={
-                <AuthGuard>
-                  <Profile />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/profile/:id"
-              element={
-                <AuthGuard>
-                  <PublicProfile />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/discover"
-              element={
-                <AuthGuard>
-                  <Discover />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/transit"
-              element={
-                <AuthGuard>
-                  <TransitDetail />
-                </AuthGuard>
-              }
-            />
+            >
+              <Route path="/feed" element={<Feed />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/:id" element={<PublicProfile />} />
+              <Route path="/discover" element={<Discover />} />
+              <Route path="/match" element={<Match />} />
+              <Route path="/transit" element={<TransitDetail />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

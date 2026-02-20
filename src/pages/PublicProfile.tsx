@@ -104,7 +104,6 @@ const PublicProfilePage = () => {
           Back
         </Button>
 
-        {/* Avatar & Name */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-6">
           <Avatar className="h-24 w-24 mx-auto mb-4 border-2 border-primary/30 nebula-glow">
             <AvatarFallback className="bg-primary/20 text-primary text-2xl font-serif">
@@ -117,12 +116,11 @@ const PublicProfilePage = () => {
           </span>
         </motion.div>
 
-        {/* Big Three */}
         <div className="flex justify-center gap-4 sm:gap-8 mb-8">
           {signs.map(({ label, sign, desc }) => (
             <motion.div key={label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full glass-panel flex items-center justify-center mx-auto mb-2 ${sign ? 'nebula-glow' : 'opacity-50'}`}>
-                <span className={`text-2xl sm:text-3xl ${sign ? ELEMENT_COLORS[sign] || 'text-foreground' : 'text-muted-foreground'}`}>
+              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full glass-panel flex items-center justify-center mx-auto mb-2 ${sign ? "nebula-glow" : "opacity-50"}`}>
+                <span className={`text-2xl sm:text-3xl ${sign ? ELEMENT_COLORS[sign] || "text-foreground" : "text-muted-foreground"}`}>
                   {sign ? SIGN_SYMBOLS[sign] || "?" : "?"}
                 </span>
               </div>
@@ -133,7 +131,6 @@ const PublicProfilePage = () => {
           ))}
         </div>
 
-        {/* Status */}
         {profile.current_status && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel p-4 rounded-xl mb-6 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
@@ -144,7 +141,6 @@ const PublicProfilePage = () => {
           </motion.div>
         )}
 
-        {/* Bio */}
         {profile.bio && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel p-4 sm:p-6 rounded-xl mb-6">
             <h3 className="font-serif text-lg text-foreground mb-3">About</h3>
@@ -152,7 +148,6 @@ const PublicProfilePage = () => {
           </motion.div>
         )}
 
-        {/* Planetary Bios */}
         {planetarySections.length > 0 && (
           <div className="space-y-4">
             {planetarySections.map(({ icon, label, subtitle, value }) => (
