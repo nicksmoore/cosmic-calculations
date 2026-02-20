@@ -1,7 +1,7 @@
 // src/pages/PublicProfile.tsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Lock } from "lucide-react";
+import { ArrowLeft, Loader2, Lock, UserPlus, UserCheck } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,8 @@ import { Planet, House } from "@/data/natalChartData";
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle,
 } from "@/components/ui/drawer";
+import { useFollowStatus, useFollowCounts, useToggleFollow } from "@/hooks/useFollow";
+import { useAuth } from "@/hooks/useAuth";
 
 const SIGN_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -48,7 +50,11 @@ function profileToBirthData(p: Profile): BirthData | null {
 export default function PublicProfile() {
   const { userId }  = useParams<{ userId: string }>();
   const navigate    = useNavigate();
+  const { user: currentUser } = useAuth();
   const { profile: myProfile } = useProfile();
+  const { data: isFollowing } = useFollowStatus(userId);
+  const { data: followCounts } = useFollowCounts(userId);
+  const toggleFollow = useToggleFollow(userId);
 
   const [theirProfile, setTheirProfile] = useState<Profile | null>(null);
   const [loading,      setLoading]      = useState(true);
@@ -143,6 +149,29 @@ export default function PublicProfile() {
           <h1 className="text-2xl font-serif text-ethereal mb-2">
             {theirProfile.display_name ?? "Cosmic Traveler"}
           </h1>
+
+          {/* Follow button + counts — only show if not viewing own profile */}
+          {currentUser && currentUser.id !== userId && (
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <Button
+                variant={isFollowing ? "outline" : "default"}
+                size="sm"
+                className="gap-2"
+                onClick={() => toggleFollow.mutate(!!isFollowing)}
+                disabled={toggleFollow.isPending}
+              >
+                {isFollowing
+                  ? <><UserCheck className="h-4 w-4" /> Following</>
+                  : <><UserPlus className="h-4 w-4" /> Follow</>
+                }
+              </Button>
+              {followCounts && (
+                <span className="text-xs text-muted-foreground">
+                  {followCounts.followers} followers
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Big Three */}
           <div className="flex justify-center gap-6 mb-4">

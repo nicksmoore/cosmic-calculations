@@ -123,6 +123,18 @@ const ProfilePage = () => {
   const venusPlanet   = chartData?.planets.find(p => p.name === "Venus");
   const marsPlanet    = chartData?.planets.find(p => p.name === "Mars");
 
+  // Auto-save Big Three to profile the first time chartData is available
+  useEffect(() => {
+    if (!chartData || !profile || profile.sun_sign) return;
+    const sun    = chartData.planets.find(p => p.name === "Sun")?.sign ?? null;
+    const moon   = chartData.planets.find(p => p.name === "Moon")?.sign ?? null;
+    const rising = chartData.angles.ascendant.sign ?? null;
+    if (sun && moon && rising) {
+      updateProfile({ sun_sign: sun, moon_sign: moon, rising_sign: rising });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chartData, profile?.sun_sign]);
+
   useEffect(() => {
     if (profile) {
       setForm({

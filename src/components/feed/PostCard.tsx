@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, MessageCircle, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -172,6 +173,7 @@ interface PostCardProps {
 export default function PostCard({ post, currentUserId }: PostCardProps) {
   const toggleLike = useToggleLike();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
@@ -206,20 +208,29 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
       className="glass-panel rounded-xl p-4"
     >
       <div className="flex items-start gap-3 mb-3">
-        {post.avatar_url ? (
-          <img
-            src={post.avatar_url}
-            alt=""
-            className="w-8 h-8 rounded-full flex-shrink-0"
-          />
-        ) : (
-          <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0" />
-        )}
+        <button
+          onClick={() => navigate(`/profile/${post.user_id}`)}
+          className="flex-shrink-0 focus:outline-none"
+          aria-label={`View ${post.display_name ?? "user"}'s profile`}
+        >
+          {post.avatar_url ? (
+            <img
+              src={post.avatar_url}
+              alt=""
+              className="w-8 h-8 rounded-full hover:opacity-80 transition-opacity"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-muted hover:opacity-80 transition-opacity" />
+          )}
+        </button>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2 flex-wrap">
-            <span className="font-medium text-sm truncate">
+            <button
+              onClick={() => navigate(`/profile/${post.user_id}`)}
+              className="font-medium text-sm truncate hover:underline focus:outline-none text-left"
+            >
               {post.display_name ?? "Anonymous"}
-            </span>
+            </button>
             <BigThreeGlyphs
               sun={post.sun_sign}
               moon={post.moon_sign}
