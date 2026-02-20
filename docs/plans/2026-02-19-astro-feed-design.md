@@ -206,3 +206,23 @@ Aspect abbreviations: `cnj` (conjunction), `opp` (opposition), `sq` (square), `t
 | Applying vs separating | Sort applying first | "Buildup" feels more relevant than "yesterday's news" |
 | Moderation | `deleted_at` + `report_count` columns | Future-proof without building UI today |
 | Post visibility | `is_public` field on posts | Enables private journal mode without schema change |
+
+---
+
+## Routing Guard Implementation Requirements
+
+These requirements apply to the route-level auth/onboarding guard flow (`/`, `/sign-in`, `/onboarding`, `/feed`, `/profile`, `/transit`):
+
+1. `AuthGuard` must block redirect decisions until loading resolves:
+   - `if (authLoading || profileLoading) return null` (or a route-level spinner).
+2. Birth-data eligibility check must use Supabase profile as source of truth:
+   - `const hasBirthData = !!profile?.birth_date && profile?.birth_lat != null;`
+3. All profile writes must use the Clerk-authenticated Supabase client (`getAuthenticatedClient(token)`), including:
+   - Onboarding profile save.
+   - Big Three autosave in `ChartDashboard`.
+4. `next` redirect handling must be internal-path-only:
+   - Allow only values that start with `/`.
+   - Reject absolute/protocol URLs (`http://`, `https://`, `//`).
+   - Fallback to `/feed` when invalid.
+   - Use `encodeURIComponent` when writing `next`.
+5. All guard/redirect navigations must use `replace: true` to prevent back-button redirect loops.

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getDailyCollectiveTransits, CollectiveTransit } from "@/lib/transitEngine";
-import { useClerk } from "@clerk/clerk-react";
+import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { getAuthenticatedClient } from "@/integrations/supabase/authClient";
 
 export interface DailyTransitsRow {
@@ -14,7 +14,7 @@ export interface DailyTransitsRow {
 }
 
 export function useDailyTransits() {
-  const { session } = useClerk();
+  const { getToken } = useClerkAuth();
 
   return useQuery<DailyTransitsRow | null>({
     queryKey: ["daily-transits", new Date().toISOString().slice(0, 10)],
@@ -49,7 +49,7 @@ export function useDailyTransits() {
       };
 
       try {
-        const token = await session?.getToken({ template: "supabase" });
+        const token = await getToken({ template: "supabase" });
         const client = token ? getAuthenticatedClient(token) : (supabase as any);
         await (client as any)
           .from("daily_transits")

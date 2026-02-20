@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getAuthenticatedClient } from "@/integrations/supabase/authClient";
-import { useClerk } from "@clerk/clerk-react";
+import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { useAuth } from "@/hooks/useAuth";
 
 export interface Comment {
@@ -48,14 +48,14 @@ export function useComments(postId: string, enabled = false) {
 }
 
 export function useAddComment(postId: string) {
-  const { session } = useClerk();
+  const { getToken } = useClerkAuth();
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (content: string) => {
       if (!user) throw new Error("Must be signed in to comment");
-      const token = await session?.getToken({ template: "supabase" });
+      const token = await getToken({ template: "supabase" });
       if (!token) throw new Error("Could not get auth token");
       const client = getAuthenticatedClient(token);
 
