@@ -1,6 +1,7 @@
+// src/pages/Profile.tsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Edit2, Save, Globe, Lock, Sparkles, Loader2 } from "lucide-react";
+import { Edit2, Save, Globe, Lock, Sparkles, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +9,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import StarField from "@/components/StarField";
-import { useProfile, Profile } from "@/hooks/useProfile";
+import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
-import ChartDashboard from "@/components/ChartDashboard";
+import { useEphemeris } from "@/hooks/useEphemeris";
+import NatalChartWheel from "@/components/NatalChartWheel";
+import PlanetDetails from "@/components/PlanetDetails";
+import HouseDetails from "@/components/HouseDetails";
+import { Planet, House } from "@/data/natalChartData";
 import { BirthData } from "@/components/intake/BirthDataForm";
+
+// --- Constants ---
 
 const SIGN_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -21,104 +34,105 @@ const SIGN_SYMBOLS: Record<string, string> = {
   Sagittarius: "♐", Capricorn: "♑", Aquarius: "♒", Pisces: "♓",
 };
 
-const ELEMENT_COLORS: Record<string, string> = {
-  Aries: "text-red-400", Taurus: "text-emerald-400", Gemini: "text-yellow-300", Cancer: "text-blue-300",
-  Leo: "text-orange-400", Virgo: "text-emerald-300", Libra: "text-pink-300", Scorpio: "text-red-500",
-  Sagittarius: "text-orange-300", Capricorn: "text-stone-300", Aquarius: "text-cyan-400", Pisces: "text-indigo-300",
+const SIGN_COLORS: Record<string, string> = {
+  Aries: "text-red-400", Taurus: "text-emerald-400", Gemini: "text-yellow-300",
+  Cancer: "text-blue-300", Leo: "text-orange-400", Virgo: "text-emerald-300",
+  Libra: "text-pink-300", Scorpio: "text-red-500", Sagittarius: "text-orange-300",
+  Capricorn: "text-stone-300", Aquarius: "text-cyan-400", Pisces: "text-indigo-300",
 };
 
-function BigThreeHeader({ profile }: { profile: Profile }) {
-  const signs = [
-    { label: "Sun", sign: profile.sun_sign, desc: "Your core identity" },
-    { label: "Moon", sign: profile.moon_sign, desc: "Your emotional self" },
-    { label: "Rising", sign: profile.rising_sign, desc: "How others see you" },
-  ];
+// --- Trinity Widget ---
+
+function TrinityCard({
+  label, sign,
+}: { label: string; sign: string | null }) {
+  const symbol = sign ? SIGN_SYMBOLS[sign] ?? "?" : "?";
+  const color  = sign ? SIGN_COLORS[sign] ?? "text-foreground" : "text-muted-foreground";
 
   return (
-    <div className="flex justify-center gap-4 sm:gap-8 mb-8">
-      {signs.map(({ label, sign, desc }) => (
-        <motion.div
-          key={label}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full glass-panel flex items-center justify-center mx-auto mb-2 ${sign ? 'nebula-glow' : 'opacity-50'}`}>
-            <span className={`text-2xl sm:text-3xl ${sign ? ELEMENT_COLORS[sign] || 'text-foreground' : 'text-muted-foreground'}`}>
-              {sign ? SIGN_SYMBOLS[sign] || "?" : "?"}
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">{label}</p>
-          <p className="text-sm font-serif text-foreground">{sign || "Unknown"}</p>
-          <p className="text-xs text-muted-foreground hidden sm:block">{desc}</p>
-        </motion.div>
-      ))}
+    <div className="flex flex-col items-center gap-1.5">
+      <div
+        className={`w-16 h-16 rounded-full glass-panel flex items-center justify-center ${
+          sign ? "animate-[pulse-ring_3s_ease-in-out_infinite]" : "opacity-50"
+        }`}
+      >
+        <span className={`text-2xl ${color}`}>{symbol}</span>
+      </div>
+      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="text-sm font-serif font-bold uppercase tracking-wide text-foreground">
+        {sign ?? "—"}
+      </p>
     </div>
   );
 }
 
-function PlanetaryBioSection({ icon, label, subtitle, value, isEditing, onChange }: {
-  icon: string;
-  label: string;
-  subtitle: string;
-  value: string;
-  isEditing: boolean;
-  onChange: (v: string) => void;
-}) {
+// --- Pill Chip ---
+
+function PlanetChip({
+  glyph, label, sign, house,
+}: { glyph: string; label: string; sign: string; house?: number }) {
+  const color = SIGN_COLORS[sign] ?? "text-muted-foreground";
+  const text  = house ? `${sign} · ${house}th` : sign;
+
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="glass-panel p-4 sm:p-6 rounded-xl"
-    >
-      <div className="flex items-center gap-3 mb-3">
-        <span className="text-2xl">{icon}</span>
-        <div>
-          <h3 className="font-serif text-foreground text-lg">{label}</h3>
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
-        </div>
-      </div>
-      {isEditing ? (
-        <Textarea
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          placeholder={`Tell people about ${subtitle.toLowerCase()}...`}
-          className="bg-input/50 border-border/50 min-h-[80px]"
-        />
-      ) : (
-        <p className="text-sm text-muted-foreground italic">
-          {value || `No ${label.toLowerCase()} description yet...`}
-        </p>
-      )}
-    </motion.div>
+    <span className="flex-shrink-0 flex items-center gap-1 text-xs bg-white/5 border border-border/30 rounded-full px-3 py-1.5">
+      <span>{glyph}</span>
+      <span className="text-muted-foreground">{label}</span>
+      <span className={`font-medium ${color}`}>{text}</span>
+    </span>
   );
 }
 
+// --- Main ---
+
 const ProfilePage = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
+  const navigate   = useNavigate();
+  const { user }   = useAuth();
   const { profile, isLoading, updateProfile } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({
-    display_name: "",
-    bio: "",
-    mercury_bio: "",
-    venus_bio: "",
-    mars_bio: "",
+    display_name:   "",
+    bio:            "",
+    mercury_bio:    "",
+    venus_bio:      "",
+    mars_bio:       "",
     current_status: "",
-    is_public: true,
+    is_public:      true,
   });
+  const [selectedPlanet, setSelectedPlanet] = useState<Planet | null>(null);
+  const [selectedHouse,  setSelectedHouse]  = useState<House | null>(null);
+  const [drawerOpen,     setDrawerOpen]     = useState(false);
+
+  const birthData: BirthData | null =
+    profile?.birth_date && profile?.birth_lat && profile?.birth_lng
+      ? {
+          name:        profile.display_name ?? "You",
+          birthDate:   profile.birth_date,
+          birthTime:   profile.birth_time ?? "12:00",
+          timeUnknown: profile.time_unknown ?? false,
+          location:    profile.birth_location ?? "",
+          latitude:    profile.birth_lat,
+          longitude:   profile.birth_lng,
+          timezone:    "UTC+0",
+        }
+      : null;
+
+  const { chartData } = useEphemeris(birthData);
+
+  const mercuryPlanet = chartData?.planets.find(p => p.name === "Mercury");
+  const venusPlanet   = chartData?.planets.find(p => p.name === "Venus");
+  const marsPlanet    = chartData?.planets.find(p => p.name === "Mars");
 
   useEffect(() => {
     if (profile) {
       setForm({
-        display_name: profile.display_name || "",
-        bio: profile.bio || "",
-        mercury_bio: profile.mercury_bio || "",
-        venus_bio: profile.venus_bio || "",
-        mars_bio: profile.mars_bio || "",
-        current_status: profile.current_status || "",
-        is_public: profile.is_public,
+        display_name:   profile.display_name   ?? "",
+        bio:            profile.bio             ?? "",
+        mercury_bio:    profile.mercury_bio     ?? "",
+        venus_bio:      profile.venus_bio       ?? "",
+        mars_bio:       profile.mars_bio        ?? "",
+        current_status: profile.current_status  ?? "",
+        is_public:      profile.is_public,
       });
     }
   }, [profile]);
@@ -126,24 +140,25 @@ const ProfilePage = () => {
   const handleSave = async () => {
     const success = await updateProfile({
       ...form,
-      status_updated_at: form.current_status !== (profile?.current_status || "") ? new Date().toISOString() : profile?.status_updated_at || null,
+      status_updated_at:
+        form.current_status !== (profile?.current_status ?? "")
+          ? new Date().toISOString()
+          : profile?.status_updated_at ?? null,
     });
     if (success) setIsEditing(false);
   };
 
-  const birthData: BirthData | null =
-    profile?.birth_date && profile?.birth_lat && profile?.birth_lng
-      ? {
-          name: profile.display_name ?? "You",
-          birthDate: profile.birth_date,
-          birthTime: profile.birth_time ?? "12:00",
-          timeUnknown: profile.time_unknown ?? false,
-          location: profile.birth_location ?? "",
-          latitude: profile.birth_lat,
-          longitude: profile.birth_lng,
-          timezone: "UTC+0",
-        }
-      : null;
+  const handleSelectPlanet = (planet: Planet | null) => {
+    setSelectedPlanet(planet);
+    setSelectedHouse(null);
+    if (planet) setDrawerOpen(true);
+  };
+
+  const handleSelectHouse = (house: House | null) => {
+    setSelectedHouse(house);
+    setSelectedPlanet(null);
+    if (house) setDrawerOpen(true);
+  };
 
   if (isLoading) {
     return (
@@ -156,19 +171,11 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <StarField />
+      <main className="container mx-auto px-4 pt-6 pb-28 max-w-2xl relative z-10">
 
-      <main className="container mx-auto px-4 pt-6 pb-24 max-w-2xl relative z-10">
-
-        {/* Back button */}
-        <div className="mb-6">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/feed")} className="gap-2">
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Back
-          </Button>
-        </div>
-
-        {/* Avatar & Name — always visible above tabs */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-6">
+        {/* ── Zone 1: Identity Header ── */}
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+          {/* Avatar */}
           <Avatar className="h-24 w-24 mx-auto mb-4 border-2 border-primary/30 nebula-glow">
             <AvatarImage src={user?.user_metadata?.avatar_url || user?.user_metadata?.picture} />
             <AvatarFallback className="bg-primary/20 text-primary text-2xl font-serif">
@@ -176,19 +183,22 @@ const ProfilePage = () => {
             </AvatarFallback>
           </Avatar>
 
+          {/* Display name */}
           {isEditing ? (
             <Input
               value={form.display_name}
               onChange={e => setForm(f => ({ ...f, display_name: e.target.value }))}
-              className="max-w-xs mx-auto text-center text-xl font-serif bg-input/50 border-border/50"
+              className="max-w-xs mx-auto text-center text-xl font-serif bg-input/50 border-border/50 mb-3"
               placeholder="Your display name"
             />
           ) : (
-            <h1 className="text-3xl font-serif text-ethereal">{form.display_name || "Cosmic Traveler"}</h1>
+            <h1 className="text-3xl font-serif text-ethereal mb-3">
+              {form.display_name || "Cosmic Traveler"}
+            </h1>
           )}
 
-          {/* Visibility toggle */}
-          <div className="flex items-center justify-center gap-2 mt-3">
+          {/* Visibility */}
+          <div className="flex items-center justify-center gap-2 mb-6">
             {isEditing ? (
               <>
                 <Switch
@@ -207,129 +217,213 @@ const ProfilePage = () => {
               </span>
             )}
           </div>
+
+          {/* Trinity Widget */}
+          <div className="flex justify-center gap-6 sm:gap-10 mb-6">
+            <TrinityCard label="Sun"    sign={profile?.sun_sign    ?? null} />
+            <TrinityCard label="Moon"   sign={profile?.moon_sign   ?? null} />
+            <TrinityCard label="Rising" sign={profile?.rising_sign ?? null} />
+          </div>
+
+          {/* Pill Tags: Mercury / Venus / Mars */}
+          {chartData && (mercuryPlanet || venusPlanet || marsPlanet) && (
+            <ScrollArea className="w-full mb-6">
+              <div className="flex gap-2 pb-2 justify-center">
+                {mercuryPlanet && (
+                  <PlanetChip
+                    glyph="☿" label="Mercury"
+                    sign={mercuryPlanet.sign} house={mercuryPlanet.house}
+                  />
+                )}
+                {venusPlanet && (
+                  <PlanetChip
+                    glyph="♀" label="Venus"
+                    sign={venusPlanet.sign} house={venusPlanet.house}
+                  />
+                )}
+                {marsPlanet && (
+                  <PlanetChip
+                    glyph="♂" label="Mars"
+                    sign={marsPlanet.sign} house={marsPlanet.house}
+                  />
+                )}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          )}
+
+          {/* Current Vibe */}
+          <div className="glass-panel rounded-xl p-3 text-center mb-6">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <Sparkles className="h-3 w-3 text-accent" />
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Current Vibe</span>
+            </div>
+            {isEditing ? (
+              <Input
+                value={form.current_status}
+                onChange={e => setForm(f => ({ ...f, current_status: e.target.value }))}
+                placeholder='e.g., "Surviving my Saturn Return"'
+                className="text-center bg-input/50 border-border/50 text-sm"
+              />
+            ) : (
+              <p className="text-sm font-serif text-foreground italic">
+                {form.current_status || "No status set..."}
+              </p>
+            )}
+          </div>
+
+          {/* Edit / Save button */}
+          <Button
+            variant={isEditing ? "default" : "outline"}
+            size="sm"
+            onClick={isEditing ? handleSave : () => setIsEditing(true)}
+            className="gap-2"
+          >
+            {isEditing ? <Save className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
+            {isEditing ? "Save" : "Edit Profile"}
+          </Button>
         </motion.div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="profile">
-          <TabsList className="w-full mb-6">
-            <TabsTrigger value="profile" className="flex-1">Profile</TabsTrigger>
-            <TabsTrigger value="chart" className="flex-1">Chart</TabsTrigger>
-          </TabsList>
+        {/* ── Zone 2: The Living Chart ── */}
+        {birthData && chartData ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
+            <NatalChartWheel
+              onSelectPlanet={handleSelectPlanet}
+              onSelectHouse={handleSelectHouse}
+              selectedPlanet={selectedPlanet}
+              selectedHouse={selectedHouse}
+              houseSystem="placidus"
+              chartData={chartData}
+              partnerChartData={null}
+              partnerName={undefined}
+            />
+          </motion.div>
+        ) : profile && !profile.sun_sign ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 glass-panel p-4 rounded-xl text-center cosmic-border"
+          >
+            <p className="text-sm text-muted-foreground">
+              🌟 Your Big Three aren't set yet! Generate your natal chart to populate them.
+            </p>
+            <Button variant="outline" size="sm" className="mt-3 gap-2" onClick={() => navigate("/")}>
+              <Sparkles className="h-4 w-4" />
+              Generate My Chart
+            </Button>
+          </motion.div>
+        ) : null}
 
-          <TabsContent value="profile">
-            {/* Edit button */}
-            <div className="flex justify-end mb-4">
-              <Button
-                variant={isEditing ? "default" : "outline"}
-                size="sm"
-                onClick={isEditing ? handleSave : () => setIsEditing(true)}
-                className="gap-2"
-              >
-                {isEditing ? <Save className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
-                {isEditing ? "Save" : "Edit"}
-              </Button>
-            </div>
-
-            {/* Big Three */}
-            {profile && <BigThreeHeader profile={profile} />}
-
-            {/* Transit Status */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="glass-panel p-4 rounded-xl mb-6 text-center"
-            >
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Sparkles className="h-4 w-4 text-accent" />
-                <span className="text-xs uppercase tracking-wider text-muted-foreground">Current Vibe</span>
-              </div>
-              {isEditing ? (
-                <Input
-                  value={form.current_status}
-                  onChange={e => setForm(f => ({ ...f, current_status: e.target.value }))}
-                  placeholder='e.g., "Surviving my Saturn Return"'
-                  className="text-center bg-input/50 border-border/50"
-                />
-              ) : (
-                <p className="text-sm font-serif text-foreground italic">
-                  {form.current_status || "No status set..."}
-                </p>
-              )}
-            </motion.div>
-
-            {/* Bio */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel p-4 sm:p-6 rounded-xl mb-6">
-              <h3 className="font-serif text-lg text-foreground mb-3">About</h3>
-              {isEditing ? (
-                <Textarea
-                  value={form.bio}
-                  onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
-                  placeholder="Tell the cosmos about yourself..."
-                  className="bg-input/50 border-border/50 min-h-[100px]"
-                />
-              ) : (
-                <p className="text-sm text-muted-foreground">{form.bio || "No bio yet..."}</p>
-              )}
-            </motion.div>
-
-            {/* Planetary Bio Sections */}
-            <div className="space-y-4">
-              <PlanetaryBioSection
-                icon="☿"
-                label="My Mercury"
-                subtitle="How I communicate"
-                value={form.mercury_bio}
-                isEditing={isEditing}
-                onChange={v => setForm(f => ({ ...f, mercury_bio: v }))}
+        {/* ── Zone 3: Astro-Bio ── */}
+        <div className="space-y-4">
+          {/* About */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel p-4 sm:p-6 rounded-xl">
+            <h3 className="font-serif text-lg text-foreground mb-3">About</h3>
+            {isEditing ? (
+              <Textarea
+                value={form.bio}
+                onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
+                placeholder="Tell the cosmos about yourself..."
+                className="bg-input/50 border-border/50 min-h-[100px]"
               />
-              <PlanetaryBioSection
-                icon="♀"
-                label="My Venus"
-                subtitle="How I love"
-                value={form.venus_bio}
-                isEditing={isEditing}
-                onChange={v => setForm(f => ({ ...f, venus_bio: v }))}
-              />
-              <PlanetaryBioSection
-                icon="♂"
-                label="My Mars"
-                subtitle="How I work & fight"
-                value={form.mars_bio}
-                isEditing={isEditing}
-                onChange={v => setForm(f => ({ ...f, mars_bio: v }))}
-              />
-            </div>
-
-            {/* Tip to populate Big Three */}
-            {profile && !profile.sun_sign && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-8 glass-panel p-4 rounded-xl text-center cosmic-border"
-              >
-                <p className="text-sm text-muted-foreground">
-                  🌟 Your Big Three aren't set yet! Go back and generate your natal chart — your Sun, Moon & Rising signs will automatically populate here.
-                </p>
-                <Button variant="outline" size="sm" className="mt-3 gap-2" onClick={() => navigate("/")}>
-                  <Sparkles className="h-4 w-4" />
-                  Generate My Chart
-                </Button>
-              </motion.div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="chart">
-            {birthData ? (
-              <ChartDashboard birthData={birthData} />
             ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <Sparkles className="h-8 w-8 mx-auto mb-3 opacity-40" aria-hidden="true" />
-                <p>No birth data yet.</p>
-              </div>
+              <p className="text-sm text-muted-foreground">{form.bio || "No bio yet..."}</p>
             )}
-          </TabsContent>
-        </Tabs>
+          </motion.div>
+
+          {/* Mercury */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel p-4 sm:p-6 rounded-xl">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">☿</span>
+              <div>
+                <h3 className="font-serif text-foreground">My Mercury</h3>
+                <p className="text-xs text-muted-foreground">How I communicate</p>
+              </div>
+            </div>
+            {isEditing ? (
+              <Textarea
+                value={form.mercury_bio}
+                onChange={e => setForm(f => ({ ...f, mercury_bio: e.target.value }))}
+                placeholder="How I communicate..."
+                className="bg-input/50 border-border/50 min-h-[80px]"
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground italic">
+                {form.mercury_bio || "No Mercury description yet..."}
+              </p>
+            )}
+          </motion.div>
+
+          {/* Venus */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel p-4 sm:p-6 rounded-xl">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">♀</span>
+              <div>
+                <h3 className="font-serif text-foreground">My Venus</h3>
+                <p className="text-xs text-muted-foreground">How I love</p>
+              </div>
+            </div>
+            {isEditing ? (
+              <Textarea
+                value={form.venus_bio}
+                onChange={e => setForm(f => ({ ...f, venus_bio: e.target.value }))}
+                placeholder="How I love..."
+                className="bg-input/50 border-border/50 min-h-[80px]"
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground italic">
+                {form.venus_bio || "No Venus description yet..."}
+              </p>
+            )}
+          </motion.div>
+
+          {/* Mars */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel p-4 sm:p-6 rounded-xl">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">♂</span>
+              <div>
+                <h3 className="font-serif text-foreground">My Mars</h3>
+                <p className="text-xs text-muted-foreground">How I work & fight</p>
+              </div>
+            </div>
+            {isEditing ? (
+              <Textarea
+                value={form.mars_bio}
+                onChange={e => setForm(f => ({ ...f, mars_bio: e.target.value }))}
+                placeholder="How I work & fight..."
+                className="bg-input/50 border-border/50 min-h-[80px]"
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground italic">
+                {form.mars_bio || "No Mars description yet..."}
+              </p>
+            )}
+          </motion.div>
+        </div>
       </main>
+
+      {/* ── Planetary Drawer ── */}
+      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <DrawerContent className="glass-panel border-border/30 max-h-[60vh]">
+          <DrawerHeader>
+            <DrawerTitle className="font-serif text-ethereal">
+              {selectedPlanet
+                ? `${selectedPlanet.symbol} ${selectedPlanet.name} in ${selectedPlanet.sign}`
+                : selectedHouse
+                ? `${selectedHouse.number}th House`
+                : "Details"}
+            </DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-6 overflow-y-auto">
+            {selectedPlanet && chartData && (
+              <PlanetDetails planet={selectedPlanet} />
+            )}
+            {selectedHouse && chartData && (
+              <HouseDetails house={selectedHouse} planets={chartData.planets} />
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };

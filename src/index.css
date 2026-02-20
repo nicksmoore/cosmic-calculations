@@ -256,4 +256,10 @@
   .scrollbar-cosmic::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--nebula));
   }
+
+  /* Trinity Widget pulse ring */
+  @keyframes pulse-ring {
+    0%, 100% { box-shadow: 0 0 0 0 hsl(var(--accent) / 0.4); }
+    50%       { box-shadow: 0 0 0 8px hsl(var(--accent) / 0); }
+  }
 }
