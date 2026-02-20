@@ -153,11 +153,17 @@ const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
 
   if (!transits) return null;
 
+  const mercuryIsRetrograde = transits.planets.find(p => p.name === "Mercury")?.isRetrograde === true;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full glass-panel border border-border/30 rounded-xl backdrop-blur-md mb-8"
+      className={`w-full glass-panel border rounded-xl backdrop-blur-md mb-8 ${
+        mercuryIsRetrograde
+          ? "bg-amber-500/10 border-amber-500/20"
+          : "border-border/30"
+      }`}
     >
       {/* Header Row */}
       <div className="flex items-center px-4 py-3 gap-4 border-b border-border/20">
