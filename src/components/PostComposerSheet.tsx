@@ -4,6 +4,7 @@ import PostComposer from "@/components/feed/PostComposer";
 import { useProfile } from "@/hooks/useProfile";
 import { useEphemeris } from "@/hooks/useEphemeris";
 import { BirthData } from "@/components/intake/BirthDataForm";
+import { timezoneFromLongitude } from "@/lib/timezone";
 
 interface PostComposerSheetProps {
   open: boolean;
@@ -23,7 +24,7 @@ export default function PostComposerSheet({ open, onOpenChange }: PostComposerSh
           location:    profile.birth_location ?? "",
           latitude:    profile.birth_lat,
           longitude:   profile.birth_lng,
-          timezone:    "UTC+0",
+          timezone:    timezoneFromLongitude(profile.birth_lng),
         }
       : null;
 

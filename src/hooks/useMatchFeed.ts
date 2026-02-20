@@ -6,6 +6,7 @@ import { useEphemeris } from "@/hooks/useEphemeris";
 import { calculateChartForProfile } from "@/lib/calculateChartForProfile";
 import { calculateCompatibility } from "@/lib/synastry/compatibility";
 import { BirthData } from "@/components/intake/BirthDataForm";
+import { timezoneFromLongitude } from "@/lib/timezone";
 
 export interface MatchProfile {
   profile: Profile;
@@ -22,7 +23,7 @@ function profileToBirthData(p: Profile): BirthData | null {
     location:    p.birth_location ?? "",
     latitude:    p.birth_lat,
     longitude:   p.birth_lng,
-    timezone:    "UTC+0",
+    timezone:    timezoneFromLongitude(p.birth_lng),
   };
 }
 

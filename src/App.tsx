@@ -9,6 +9,7 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import AuthGuard from "@/components/AuthGuard";
 import BottomNav from "@/components/BottomNav";
 import PostComposerSheet from "@/components/PostComposerSheet";
+import DesktopSidebar from "@/components/DesktopSidebar";
 import RootRedirect from "./pages/RootRedirect";
 import SignInPage from "./pages/SignIn";
 import Onboarding from "./pages/Onboarding";
@@ -27,7 +28,12 @@ function AuthedLayout() {
 
   return (
     <>
-      <Outlet context={{ postOpen, setPostOpen }} />
+      <div className="min-h-screen md:grid md:grid-cols-[18rem_minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)]">
+        <DesktopSidebar onOpenPost={() => setPostOpen(true)} />
+        <div className="min-w-0">
+          <Outlet context={{ postOpen, setPostOpen }} />
+        </div>
+      </div>
       <BottomNav onOpenPost={() => setPostOpen(true)} />
       <PostComposerSheet open={postOpen} onOpenChange={setPostOpen} />
     </>

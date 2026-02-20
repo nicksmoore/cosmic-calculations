@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { publicSupabase } from "@/integrations/supabase/publicClient";
 
 const PAGE_SIZE = 20;
 
@@ -35,7 +35,7 @@ export function useFeed() {
       const from = (pageParam as number) * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
 
-      const { data: posts, error: postsError } = await (supabase as any)
+      const { data: posts, error: postsError } = await (publicSupabase as any)
         .from("posts")
         .select("id, user_id, content, likes_count, comments_count, created_at, transit_snapshot")
         .eq("is_public", true)
@@ -49,7 +49,7 @@ export function useFeed() {
       const postIds = posts.map((p: any) => p.id);
       const userIds = [...new Set(posts.map((p: any) => p.user_id))];
 
-      const { data: profiles } = await (supabase as any)
+      const { data: profiles } = await (publicSupabase as any)
         .from("profiles")
         .select("user_id, display_name, avatar_url, sun_sign, moon_sign, rising_sign")
         .in("user_id", userIds);
@@ -58,7 +58,7 @@ export function useFeed() {
         (profiles ?? []).map((p: any) => [p.user_id, p])
       );
 
-      const { data: tags } = await (supabase as any)
+      const { data: tags } = await (publicSupabase as any)
         .from("post_transit_tags")
         .select("post_id, transit_key, display_name, orb, is_primary, is_personal, is_applying")
         .in("post_id", postIds);

@@ -17,6 +17,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import StarField from "@/components/StarField";
+import DailyHookCard from "@/components/feed/DailyHookCard";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useEphemeris } from "@/hooks/useEphemeris";
@@ -25,6 +26,7 @@ import PlanetDetails from "@/components/PlanetDetails";
 import HouseDetails from "@/components/HouseDetails";
 import { Planet, House } from "@/data/natalChartData";
 import { BirthData } from "@/components/intake/BirthDataForm";
+import { timezoneFromLongitude } from "@/lib/timezone";
 
 // --- Constants ---
 
@@ -113,7 +115,7 @@ const ProfilePage = () => {
           location:    profile.birth_location ?? "",
           latitude:    profile.birth_lat,
           longitude:   profile.birth_lng,
-          timezone:    "UTC+0",
+          timezone:    timezoneFromLongitude(profile.birth_lng),
         }
       : null;
 
@@ -123,17 +125,22 @@ const ProfilePage = () => {
   const venusPlanet   = chartData?.planets.find(p => p.name === "Venus");
   const marsPlanet    = chartData?.planets.find(p => p.name === "Mars");
 
-  // Auto-save Big Three to profile the first time chartData is available
+  // Keep profile Big Three in sync with current chart computation.
   useEffect(() => {
-    if (!chartData || !profile || profile.sun_sign) return;
+    if (!chartData || !profile) return;
     const sun    = chartData.planets.find(p => p.name === "Sun")?.sign ?? null;
     const moon   = chartData.planets.find(p => p.name === "Moon")?.sign ?? null;
     const rising = chartData.angles.ascendant.sign ?? null;
-    if (sun && moon && rising) {
+    const changed =
+      sun !== profile.sun_sign ||
+      moon !== profile.moon_sign ||
+      rising !== profile.rising_sign;
+
+    if (sun && moon && rising && changed) {
       updateProfile({ sun_sign: sun, moon_sign: moon, rising_sign: rising });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartData, profile?.sun_sign]);
+  }, [chartData, profile?.sun_sign, profile?.moon_sign, profile?.rising_sign]);
 
   useEffect(() => {
     if (profile) {
@@ -183,7 +190,7 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <StarField />
-      <main className="container mx-auto px-4 pt-6 pb-28 max-w-2xl relative z-10">
+      <main className="mx-auto w-full max-w-6xl px-4 pt-6 pb-28 md:px-8 md:pb-10 relative z-10">
 
         {/* ── Zone 1: Identity Header ── */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
@@ -295,6 +302,9 @@ const ProfilePage = () => {
             {isEditing ? "Save" : "Edit Profile"}
           </Button>
         </motion.div>
+
+        {/* Daily transits on profile for quick context */}
+        <DailyHookCard />
 
         {/* ── Zone 2: The Living Chart ── */}
         {birthData && chartData ? (

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/drawer";
 import { useFollowStatus, useFollowCounts, useToggleFollow } from "@/hooks/useFollow";
 import { useAuth } from "@/hooks/useAuth";
+import { timezoneFromLongitude } from "@/lib/timezone";
 
 const SIGN_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -43,7 +44,7 @@ function profileToBirthData(p: Profile): BirthData | null {
     location:    p.birth_location ?? "",
     latitude:    p.birth_lat,
     longitude:   p.birth_lng,
-    timezone:    "UTC+0",
+    timezone:    timezoneFromLongitude(p.birth_lng),
   };
 }
 

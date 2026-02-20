@@ -200,22 +200,34 @@ const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
         )}
       </div>
 
-      {/* Scrollable planets - click to navigate */}
+      {/* Planets - wrap on desktop, horizontal scroll on mobile */}
       <div className="px-4 py-3">
         <p className="text-xs text-muted-foreground mb-2">Tap a planet to see what it means for you today</p>
-        <ScrollArea className="w-full">
-          <div className="flex items-center gap-3 pb-2">
-            {transits.planets.map((planet) => (
-              <PlanetChip 
-                key={planet.name} 
-                planet={planet} 
-                natalPlanets={natalPlanets.map((p) => ({ name: p.name, sign: p.sign }))}
-                onClick={() => handlePlanetClick(planet)}
-              />
-            ))}
-          </div>
-          <ScrollBar orientation="horizontal" className="h-1.5" />
-        </ScrollArea>
+        <div className="md:hidden">
+          <ScrollArea className="w-full">
+            <div className="flex items-center gap-3 pb-2">
+              {transits.planets.map((planet) => (
+                <PlanetChip
+                  key={planet.name}
+                  planet={planet}
+                  natalPlanets={natalPlanets.map((p) => ({ name: p.name, sign: p.sign }))}
+                  onClick={() => handlePlanetClick(planet)}
+                />
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" className="h-1.5" />
+          </ScrollArea>
+        </div>
+        <div className="hidden md:flex md:flex-wrap md:gap-3">
+          {transits.planets.map((planet) => (
+            <PlanetChip
+              key={planet.name}
+              planet={planet}
+              natalPlanets={natalPlanets.map((p) => ({ name: p.name, sign: p.sign }))}
+              onClick={() => handlePlanetClick(planet)}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Mobile significant transit */}
