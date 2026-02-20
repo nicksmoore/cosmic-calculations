@@ -1,8 +1,25 @@
 // src/pages/SignIn.tsx
+import { Navigate } from "react-router-dom";
 import { SignIn } from "@clerk/clerk-react";
+import { Loader2 } from "lucide-react";
 import StarField from "@/components/StarField";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function SignInPage() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Loading">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to="/feed" replace />;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <StarField />

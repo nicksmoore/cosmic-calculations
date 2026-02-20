@@ -19,7 +19,7 @@ export default function Onboarding() {
   const { updateProfile } = useProfile();
 
   const handleSubmit = async (data: BirthData) => {
-    await updateProfile({
+    const success = await updateProfile({
       display_name: data.name,
       birth_date: data.birthDate,
       birth_time: data.timeUnknown ? null : data.birthTime,
@@ -28,7 +28,7 @@ export default function Onboarding() {
       birth_lng: data.longitude,
       time_unknown: data.timeUnknown,
     });
-
+    if (!success) return; // updateProfile already shows a toast on failure
     const destination = getSafeNext(searchParams.get("next"));
     navigate(destination, { replace: true });
   };
