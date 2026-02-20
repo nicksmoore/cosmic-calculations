@@ -1,11 +1,8 @@
 import { useRef, useCallback } from "react";
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import DailyHookCard from "@/components/feed/DailyHookCard";
 import PostComposer from "@/components/feed/PostComposer";
 import PostCard from "@/components/feed/PostCard";
-import UserMenu from "@/components/UserMenu";
 import { useFeed } from "@/hooks/useFeed";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -95,31 +92,7 @@ export default function Feed() {
 
   return (
     <div className="min-h-screen">
-      {/* Fixed header */}
-      <div className="fixed top-4 right-4 z-50">
-        <UserMenu />
-      </div>
-
-      <main className="container mx-auto px-4 pt-6 pb-24 max-w-2xl">
-        {/* Back link */}
-        <div className="mb-4">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Chart
-          </Link>
-        </div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-serif text-ethereal mb-6"
-        >
-          Astro Feed
-        </motion.h1>
-
+      <main className="container mx-auto px-4 pt-6 pb-28 max-w-2xl">
         {/* Sticky Daily Hook */}
         <DailyHookCard />
 
