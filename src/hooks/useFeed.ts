@@ -15,6 +15,7 @@ export interface FeedPost {
   sun_sign: string | null;
   moon_sign: string | null;
   rising_sign: string | null;
+  transit_snapshot: Array<{ planet: string; display_name: string; vibe: string }> | null;
   transit_tags: Array<{
     transit_key: string;
     display_name: string;
@@ -36,7 +37,7 @@ export function useFeed() {
 
       const { data: posts, error: postsError } = await (supabase as any)
         .from("posts")
-        .select("id, user_id, content, likes_count, comments_count, created_at")
+        .select("id, user_id, content, likes_count, comments_count, created_at, transit_snapshot")
         .eq("is_public", true)
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
@@ -73,12 +74,13 @@ export function useFeed() {
         const profile = profileMap.get(post.user_id) ?? {};
         return {
           ...post,
-          display_name:    profile.display_name ?? null,
-          avatar_url:      profile.avatar_url ?? null,
-          sun_sign:        profile.sun_sign ?? null,
-          moon_sign:       profile.moon_sign ?? null,
-          rising_sign:     profile.rising_sign ?? null,
-          transit_tags:    tagsMap.get(post.id) ?? [],
+          display_name:      profile.display_name ?? null,
+          avatar_url:        profile.avatar_url ?? null,
+          sun_sign:          profile.sun_sign ?? null,
+          moon_sign:         profile.moon_sign ?? null,
+          rising_sign:       profile.rising_sign ?? null,
+          transit_snapshot:  post.transit_snapshot ?? null,
+          transit_tags:      tagsMap.get(post.id) ?? [],
         } as FeedPost;
       });
     },
