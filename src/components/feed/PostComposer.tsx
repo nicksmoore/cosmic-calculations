@@ -48,9 +48,10 @@ function TransitPill({ tag, onRemove, isCollective }: TransitPillProps) {
 
 interface PostComposerProps {
   chartData: NatalChartData | null;
+  onPosted?: () => void;
 }
 
-export default function PostComposer({ chartData }: PostComposerProps) {
+export default function PostComposer({ chartData, onPosted }: PostComposerProps) {
   const { user } = useAuth();
   const { data: dailyTransits } = useDailyTransits();
   const createPost = useCreatePost();
@@ -98,12 +99,19 @@ export default function PostComposer({ chartData }: PostComposerProps) {
   const handleSubmit = async () => {
     if (!content.trim() || content.length > MAX_CHARS) return;
 
+    const transitSnapshot = dailyTransits?.transits.slice(0, 3).map(t => ({
+      planet:       t.transiting_planet,
+      display_name: t.display_name,
+      vibe:         t.vibe ?? "",
+    })) ?? [];
+
     try {
-      await createPost.mutateAsync({ content: content.trim(), transitTags: allTags });
+      await createPost.mutateAsync({ content: content.trim(), transitTags: allTags, transitSnapshot });
       setContent("");
       setPersonalTags([]);
       setTagsComputed(false);
       toast({ title: "Posted to the cosmos ✨" });
+      onPosted?.();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       toast({ variant: "destructive", title: "Post failed", description: message });

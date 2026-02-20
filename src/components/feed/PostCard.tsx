@@ -3,11 +3,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Heart, MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { FeedPost } from "@/hooks/useFeed";
 import { useToggleLike } from "@/hooks/useToggleLike";
 import { useComments, useAddComment, Comment } from "@/hooks/useComments";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+
+const PLANET_GLYPHS: Record<string, string> = {
+  Sun: "☀", Moon: "☽", Mercury: "☿", Venus: "♀", Mars: "♂",
+  Jupiter: "♃", Saturn: "♄", Uranus: "♅", Neptune: "♆", Pluto: "♇",
+};
 
 const SIGN_GLYPHS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -45,6 +51,39 @@ function TransitPillBadge({ tag }: { tag: FeedPost["transit_tags"][0] }) {
     <span className={`text-xs px-2 py-0.5 rounded-full border ${colorClass}`}>
       {tag.display_name}
     </span>
+  );
+}
+
+function TransitStamp({
+  snapshot,
+}: {
+  snapshot: NonNullable<FeedPost["transit_snapshot"]>;
+}) {
+  const glyphs = snapshot.map(s => PLANET_GLYPHS[s.planet] ?? s.planet[0]).join(" ");
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          aria-label="View sky snapshot at time of post"
+          className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors flex-shrink-0 px-1"
+        >
+          {glyphs}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 glass-panel border-border/30 p-3" side="top">
+        <p className="text-xs font-medium text-foreground mb-2">Sky at time of post</p>
+        <ul className="space-y-1.5">
+          {snapshot.map((s, i) => (
+            <li key={i} className="text-xs text-muted-foreground">
+              <span className="mr-1">{PLANET_GLYPHS[s.planet] ?? "✦"}</span>
+              <span className="font-medium text-foreground">{s.display_name}</span>
+              {s.vibe && <span> — {s.vibe}</span>}
+            </li>
+          ))}
+        </ul>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -186,9 +225,12 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
               moon={post.moon_sign}
               rising={post.rising_sign}
             />
-            <span className="text-muted-foreground text-xs ml-auto flex-shrink-0">
-              {timeAgo}
-            </span>
+            <div className="flex items-center gap-1 ml-auto flex-shrink-0">
+              {post.transit_snapshot && post.transit_snapshot.length > 0 && (
+                <TransitStamp snapshot={post.transit_snapshot} />
+              )}
+              <span className="text-muted-foreground text-xs">{timeAgo}</span>
+            </div>
           </div>
         </div>
       </div>

@@ -1,10 +1,60 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Search, Send, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NatalChartData } from "@/data/natalChartData";
 import { useDailyInsight } from "@/hooks/useDailyInsight";
+import { useDailyTransits } from "@/hooks/useDailyTransits";
+
+function VibeBar() {
+  const { data: dailyTransits } = useDailyTransits();
+
+  const score = useMemo(() => {
+    if (!dailyTransits?.transits?.length) return 50;
+    let total = 0;
+    for (const t of dailyTransits.transits) {
+      switch (t.aspect) {
+        case "Trine":      total += 1; break;
+        case "Sextile":    total += 1; break;
+        case "Square":     total -= 1; break;
+        case "Opposition": total -= 1; break;
+        // Conjunction and others: 0
+      }
+    }
+    const max = dailyTransits.transits.length;
+    return Math.round(((total + max) / (2 * max)) * 100);
+  }, [dailyTransits]);
+
+  const hasPluto = dailyTransits?.transits.some(t =>
+    t.transiting_planet === "Pluto" || t.target_planet === "Pluto"
+  );
+
+  const label =
+    hasPluto   ? "Transformative" :
+    score >= 75 ? "Smooth" :
+    score >= 50 ? "Active" :
+    "Electric";
+
+  return (
+    <div className="mt-4 pt-4 border-t border-border/20">
+      <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+        <span>← Smooth</span>
+        <span className="font-medium text-foreground">{label}</span>
+        <span>Electric →</span>
+      </div>
+      <div className="h-2 rounded-full bg-border/30 overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-700"
+          style={{
+            width: `${score}%`,
+            background: `linear-gradient(to right, hsl(var(--accent)), ${score < 40 ? "#f97316" : score < 60 ? "#eab308" : "#34d399"})`,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
 interface DailyInsightPanelProps {
   chartData: NatalChartData;
@@ -179,6 +229,8 @@ const DailyInsightPanel = ({ chartData }: DailyInsightPanelProps) => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        <VibeBar />
       </div>
     </motion.div>
   );
