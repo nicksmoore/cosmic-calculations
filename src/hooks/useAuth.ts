@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useUser, useClerk } from "@clerk/clerk-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -46,20 +46,26 @@ export function useAuth(): UseAuthReturn {
     }
   }, [clerkSignOut, toast]);
 
+  // Memoize the user object so downstream useEffects with [user] in their deps
+  // only re-fire when the actual Clerk user ID changes — not on every render.
+  const stableUser = useMemo(() => {
+    if (!user) return null;
+    return {
+      id: user.id,
+      email: user.primaryEmailAddress?.emailAddress ?? null,
+      name: user.fullName,
+      avatar: user.imageUrl,
+      user_metadata: {
+        full_name: user.fullName ?? undefined,
+        avatar_url: user.imageUrl ?? undefined,
+        picture: user.imageUrl ?? undefined,
+      },
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   return {
-    user: user
-      ? {
-          id: user.id,
-          email: user.primaryEmailAddress?.emailAddress ?? null,
-          name: user.fullName,
-          avatar: user.imageUrl,
-          user_metadata: {
-            full_name: user.fullName ?? undefined,
-            avatar_url: user.imageUrl ?? undefined,
-            picture: user.imageUrl ?? undefined,
-          },
-        }
-      : null,
+    user: stableUser,
     session: null,
     isLoading: !isLoaded,
     signInWithGoogle,
