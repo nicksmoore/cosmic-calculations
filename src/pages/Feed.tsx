@@ -1,5 +1,6 @@
 import { useRef, useCallback } from "react";
 import { Loader2 } from "lucide-react";
+import TodaysPlanetaryBar from "@/components/TodaysPlanetaryBar";
 import DailyHookCard from "@/components/feed/DailyHookCard";
 import PostComposer from "@/components/feed/PostComposer";
 import PostCard from "@/components/feed/PostCard";
@@ -93,6 +94,13 @@ export default function Feed() {
   return (
     <div className="min-h-screen">
       <main className="container mx-auto px-4 pt-6 pb-28 max-w-2xl">
+        {/* Sky Header */}
+        {chartData && (
+          <div className="mb-4">
+            <TodaysPlanetaryBar chartData={chartData} />
+          </div>
+        )}
+
         {/* Sticky Daily Hook */}
         <DailyHookCard />
 
