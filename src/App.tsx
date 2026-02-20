@@ -1,10 +1,14 @@
+// src/App.tsx
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ClerkProvider } from "@clerk/clerk-react";
-import Index from "./pages/Index";
+import AuthGuard from "@/components/AuthGuard";
+import RootRedirect from "./pages/RootRedirect";
+import SignInPage from "./pages/SignIn";
+import Onboarding from "./pages/Onboarding";
 import TransitDetail from "./pages/TransitDetail";
 import Profile from "./pages/Profile";
 import Feed from "./pages/Feed";
@@ -21,11 +25,40 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/transit" element={<TransitDetail />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/feed" element={<Feed />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/" element={<RootRedirect />} />
+            <Route path="/sign-in" element={<SignInPage />} />
+            <Route
+              path="/onboarding"
+              element={
+                <AuthGuard requireBirthData={false}>
+                  <Onboarding />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/feed"
+              element={
+                <AuthGuard>
+                  <Feed />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <AuthGuard>
+                  <Profile />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/transit"
+              element={
+                <AuthGuard>
+                  <TransitDetail />
+                </AuthGuard>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
