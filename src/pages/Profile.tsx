@@ -12,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import StarField from "@/components/StarField";
 import { useProfile, Profile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
-import { useEphemeris } from "@/hooks/useEphemeris";
 import ChartDashboard from "@/components/ChartDashboard";
 import { BirthData } from "@/components/intake/BirthDataForm";
 
