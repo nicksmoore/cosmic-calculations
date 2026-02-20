@@ -19,21 +19,25 @@ CREATE TABLE IF NOT EXISTS public.posts (
 
 ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Public posts are viewable by everyone"
+DROP POLICY IF EXISTS "Public posts are viewable by everyone" ON public.posts;
+CREATE POLICY "Public posts are viewable by everyone"
   ON public.posts FOR SELECT
   USING (is_public = true AND deleted_at IS NULL);
 
-CREATE POLICY IF NOT EXISTS "Users can insert own posts"
+DROP POLICY IF EXISTS "Users can insert own posts" ON public.posts;
+CREATE POLICY "Users can insert own posts"
   ON public.posts FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid()::text = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can update own posts"
+DROP POLICY IF EXISTS "Users can update own posts" ON public.posts;
+CREATE POLICY "Users can update own posts"
   ON public.posts FOR UPDATE
   TO authenticated
   USING (auth.uid()::text = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can delete own posts"
+DROP POLICY IF EXISTS "Users can delete own posts" ON public.posts;
+CREATE POLICY "Users can delete own posts"
   ON public.posts FOR DELETE
   TO authenticated
   USING (auth.uid()::text = user_id);
@@ -60,7 +64,8 @@ CREATE TABLE IF NOT EXISTS public.post_transit_tags (
 
 ALTER TABLE public.post_transit_tags ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Transit tags readable with post"
+DROP POLICY IF EXISTS "Transit tags readable with post" ON public.post_transit_tags;
+CREATE POLICY "Transit tags readable with post"
   ON public.post_transit_tags FOR SELECT
   USING (EXISTS (
     SELECT 1 FROM public.posts
@@ -69,7 +74,8 @@ CREATE POLICY IF NOT EXISTS "Transit tags readable with post"
       AND posts.deleted_at IS NULL
   ));
 
-CREATE POLICY IF NOT EXISTS "Users can insert transit tags for own posts"
+DROP POLICY IF EXISTS "Users can insert transit tags for own posts" ON public.post_transit_tags;
+CREATE POLICY "Users can insert transit tags for own posts"
   ON public.post_transit_tags FOR INSERT
   TO authenticated
   WITH CHECK (EXISTS (
@@ -91,16 +97,19 @@ CREATE TABLE IF NOT EXISTS public.post_likes (
 
 ALTER TABLE public.post_likes ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Likes readable by everyone"
+DROP POLICY IF EXISTS "Likes readable by everyone" ON public.post_likes;
+CREATE POLICY "Likes readable by everyone"
   ON public.post_likes FOR SELECT
   USING (true);
 
-CREATE POLICY IF NOT EXISTS "Users can like posts"
+DROP POLICY IF EXISTS "Users can like posts" ON public.post_likes;
+CREATE POLICY "Users can like posts"
   ON public.post_likes FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid()::text = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can unlike posts"
+DROP POLICY IF EXISTS "Users can unlike posts" ON public.post_likes;
+CREATE POLICY "Users can unlike posts"
   ON public.post_likes FOR DELETE
   TO authenticated
   USING (auth.uid()::text = user_id);
@@ -135,7 +144,8 @@ CREATE TABLE IF NOT EXISTS public.post_comments (
 
 ALTER TABLE public.post_comments ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Comments readable by everyone"
+DROP POLICY IF EXISTS "Comments readable by everyone" ON public.post_comments;
+CREATE POLICY "Comments readable by everyone"
   ON public.post_comments FOR SELECT
   USING (EXISTS (
     SELECT 1 FROM public.posts
@@ -144,12 +154,14 @@ CREATE POLICY IF NOT EXISTS "Comments readable by everyone"
       AND posts.deleted_at IS NULL
   ));
 
-CREATE POLICY IF NOT EXISTS "Users can insert own comments"
+DROP POLICY IF EXISTS "Users can insert own comments" ON public.post_comments;
+CREATE POLICY "Users can insert own comments"
   ON public.post_comments FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid()::text = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can delete own comments"
+DROP POLICY IF EXISTS "Users can delete own comments" ON public.post_comments;
+CREATE POLICY "Users can delete own comments"
   ON public.post_comments FOR DELETE
   TO authenticated
   USING (auth.uid()::text = user_id);
@@ -188,16 +200,19 @@ CREATE TABLE IF NOT EXISTS public.daily_transits (
 
 ALTER TABLE public.daily_transits ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Daily transits readable by everyone"
+DROP POLICY IF EXISTS "Daily transits readable by everyone" ON public.daily_transits;
+CREATE POLICY "Daily transits readable by everyone"
   ON public.daily_transits FOR SELECT
   USING (true);
 
-CREATE POLICY IF NOT EXISTS "Authenticated users can upsert daily transits"
+DROP POLICY IF EXISTS "Authenticated users can upsert daily transits" ON public.daily_transits;
+CREATE POLICY "Authenticated users can upsert daily transits"
   ON public.daily_transits FOR INSERT
   TO authenticated
   WITH CHECK (true);
 
-CREATE POLICY IF NOT EXISTS "Authenticated users can update daily transits"
+DROP POLICY IF EXISTS "Authenticated users can update daily transits" ON public.daily_transits;
+CREATE POLICY "Authenticated users can update daily transits"
   ON public.daily_transits FOR UPDATE
   TO authenticated
   USING (true);
@@ -213,16 +228,19 @@ CREATE TABLE IF NOT EXISTS public.follows (
 
 ALTER TABLE public.follows ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Follows readable by everyone"
+DROP POLICY IF EXISTS "Follows readable by everyone" ON public.follows;
+CREATE POLICY "Follows readable by everyone"
   ON public.follows FOR SELECT
   USING (true);
 
-CREATE POLICY IF NOT EXISTS "Users can follow others"
+DROP POLICY IF EXISTS "Users can follow others" ON public.follows;
+CREATE POLICY "Users can follow others"
   ON public.follows FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid()::text = follower_id);
 
-CREATE POLICY IF NOT EXISTS "Users can unfollow"
+DROP POLICY IF EXISTS "Users can unfollow" ON public.follows;
+CREATE POLICY "Users can unfollow"
   ON public.follows FOR DELETE
   TO authenticated
   USING (auth.uid()::text = follower_id);
