@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 interface CreatePostInput {
   content: string;
   transitTags: TransitTag[];
+  transitSnapshot?: Array<{ planet: string; display_name: string; vibe: string }>;
 }
 
 export function useCreatePost() {
@@ -15,7 +16,7 @@ export function useCreatePost() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ content, transitTags }: CreatePostInput) => {
+    mutationFn: async ({ content, transitTags, transitSnapshot }: CreatePostInput) => {
       if (!user) throw new Error("Must be signed in to post");
 
       const token = await getToken({ template: "supabase" });
@@ -26,9 +27,10 @@ export function useCreatePost() {
       const { data: post, error: postError } = await (client as any)
         .from("posts")
         .insert({
-          user_id:  user.id,
+          user_id:          user.id,
           content,
-          is_public: true,
+          is_public:        true,
+          transit_snapshot: transitSnapshot ?? null,
         })
         .select("id")
         .single();
