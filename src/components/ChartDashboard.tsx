@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, Box, Circle, Globe, History, MessageSquare } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Settings, Box, Circle, Globe, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BirthData } from "@/components/intake/BirthDataForm";
@@ -26,6 +25,8 @@ import { Planet, House } from "@/data/natalChartData";
 import { useEphemeris } from "@/hooks/useEphemeris";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth as useClerkAuth } from "@clerk/clerk-react";
+import { getAuthenticatedClient } from "@/integrations/supabase/authClient";
 
 interface ChartDashboardProps {
   birthData: BirthData;
@@ -44,6 +45,7 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
   
   
   const { user } = useAuth();
+  const { getToken } = useClerkAuth();
   
   // Use ephemeris for real calculations
   const { chartData, isCalculated } = useEphemeris(birthData, houseSystem, zodiacSystem);
@@ -57,24 +59,31 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
     const rising = chartData.angles.ascendant;
     if (!sun || !moon || !rising) return;
 
-    (supabase as any)
-      .from("profiles")
-      .update({
-        sun_sign: sun.sign,
-        moon_sign: moon.sign,
-        rising_sign: rising.sign,
-        birth_date: birthData.birthDate,
-        birth_time: birthData.timeUnknown ? null : birthData.birthTime,
-        birth_location: birthData.location || null,
-        birth_lat: birthData.latitude || null,
-        birth_lng: birthData.longitude || null,
-        time_unknown: birthData.timeUnknown || false,
-      })
-      .eq("user_id", user.id)
-      .then(({ error }: any) => {
-        if (error) console.error("Failed to save Big Three:", error);
-      });
-  }, [chartData, user, birthData]);
+    (async () => {
+      const token = await getToken({ template: "supabase" });
+      const client = token ? getAuthenticatedClient(token) : supabase;
+
+      const { error } = await (client as any)
+        .from("profiles")
+        .upsert(
+          {
+            user_id: user.id,
+            sun_sign: sun.sign,
+            moon_sign: moon.sign,
+            rising_sign: rising.sign,
+            birth_date: birthData.birthDate,
+            birth_time: birthData.timeUnknown ? null : birthData.birthTime,
+            birth_location: birthData.location || null,
+            birth_lat: birthData.latitude || null,
+            birth_lng: birthData.longitude || null,
+            time_unknown: birthData.timeUnknown || false,
+          },
+          { onConflict: "user_id" }
+        );
+
+      if (error) console.error("Failed to save Big Three:", error);
+    })();
+  }, [chartData, user, birthData, getToken]);
 
   const handleSelectPlanet = (planet: Planet | null) => {
     setSelectedPlanet(planet);
@@ -107,17 +116,6 @@ const ChartDashboard = ({ birthData }: ChartDashboardProps) => {
 
   return (
     <div className="min-h-screen relative">
-      {/* Feed Link - Top Left */}
-      <div className="fixed top-4 left-4 z-50">
-        <Link
-          to="/feed"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors glass-panel px-3 py-1.5 rounded-lg"
-        >
-          <MessageSquare className="h-4 w-4" />
-          Feed
-        </Link>
-      </div>
-
       {/* User Menu - Top Right */}
       <div className="fixed top-4 right-4 z-50">
         <UserMenu />

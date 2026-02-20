@@ -3,7 +3,17 @@ import { useUser, useClerk } from "@clerk/clerk-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface UseAuthReturn {
-  user: { id: string; email: string | null; name: string | null; avatar: string | null } | null;
+  user: {
+    id: string;
+    email: string | null;
+    name: string | null;
+    avatar: string | null;
+    user_metadata: {
+      full_name?: string;
+      avatar_url?: string;
+      picture?: string;
+    };
+  } | null;
   session: null;
   isLoading: boolean;
   signInWithGoogle: () => Promise<void>;
@@ -43,6 +53,11 @@ export function useAuth(): UseAuthReturn {
           email: user.primaryEmailAddress?.emailAddress ?? null,
           name: user.fullName,
           avatar: user.imageUrl,
+          user_metadata: {
+            full_name: user.fullName ?? undefined,
+            avatar_url: user.imageUrl ?? undefined,
+            picture: user.imageUrl ?? undefined,
+          },
         }
       : null,
     session: null,

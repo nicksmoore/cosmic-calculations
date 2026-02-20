@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useClerk } from "@clerk/clerk-react";
+import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { getAuthenticatedClient } from "@/integrations/supabase/authClient";
 import { TransitTag } from "@/lib/transitEngine";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,7 +10,7 @@ interface CreatePostInput {
 }
 
 export function useCreatePost() {
-  const { session } = useClerk();
+  const { getToken } = useClerkAuth();
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -18,7 +18,7 @@ export function useCreatePost() {
     mutationFn: async ({ content, transitTags }: CreatePostInput) => {
       if (!user) throw new Error("Must be signed in to post");
 
-      const token = await session?.getToken({ template: "supabase" });
+      const token = await getToken({ template: "supabase" });
       if (!token) throw new Error("Could not get auth token — check Clerk JWT template setup");
 
       const client = getAuthenticatedClient(token);
