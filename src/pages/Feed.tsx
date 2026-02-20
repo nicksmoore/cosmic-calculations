@@ -3,6 +3,7 @@ import { Loader2 } from "lucide-react";
 import TodaysPlanetaryBar from "@/components/TodaysPlanetaryBar";
 import DailyHookCard from "@/components/feed/DailyHookCard";
 import PostCard from "@/components/feed/PostCard";
+import StarField from "@/components/StarField";
 import { useFeed } from "@/hooks/useFeed";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -91,8 +92,9 @@ export default function Feed() {
   const { chartData } = useEphemeris(birthData);
 
   return (
-    <div className="min-h-screen">
-      <main className="container mx-auto px-4 pt-6 pb-28 max-w-2xl">
+    <div className="min-h-screen bg-background text-foreground">
+      <StarField />
+      <main className="container mx-auto px-4 pt-6 pb-28 max-w-2xl relative z-10">
         {/* Sky Header */}
         {chartData && (
           <div className="mb-4">
