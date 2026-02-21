@@ -71,3 +71,49 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Agent of Empires (AoE) Multi-Agent Setup
+
+This repo is configured for AoE via `.aoe/config.toml`.
+
+### Prerequisites
+
+- `tmux`
+- `aoe` installed and available in `PATH`
+
+### Start AoE in this repo
+
+```sh
+cd /Users/nickmoore/cosmic-calculations
+aoe
+```
+
+### Create parallel agent sessions (worktree per branch)
+
+```sh
+aoe add . -w feat/feed-guard -b
+aoe add . -w feat/profile-chart-tab -b
+aoe add . -w feat/posting-reliability -b
+```
+
+### Optional sandboxed sessions
+
+```sh
+aoe add --sandbox . -w feat/sandboxed-test -b
+```
+
+### Add one session per agent tool
+
+```sh
+cd /Users/nickmoore/cosmic-calculations
+./scripts/aoe-add-agents.sh
+```
+
+This creates parallel AoE sessions for:
+- `opencode`
+- `gemini-cli` (uses AoE command `gemini`)
+- `mistral-vibe` (uses AoE command `vibe`)
+- `codex`
+- `claude-code` (uses AoE command `claude`)
+
+Note: AoE runnable commands are `claude`, `opencode`, `vibe`, `codex`, and `gemini`. Labels like `llm`, `ai-coding`, and `vibe-coding` can be used as session titles/groups, not separate tool commands.

@@ -1,0 +1,12 @@
+[hooks]
+# Bootstrap dependencies when a new AoE session/worktree is created.
+on_create = ["npm install"]
+
+[worktree]
+# Use isolated branches/worktrees by default for multi-agent runs.
+enabled = true
+
+[session]
+# AoE supported tools: claude, opencode, vibe, codex, gemini
+# (default tool used when -c/--cmd is not provided)
+default_tool = "codex"

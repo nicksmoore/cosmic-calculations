@@ -96,6 +96,8 @@ function TrinityCard({
 
 // --- Main ---
 
+// --- Main ---
+
 const ProfilePage = () => {
   type HouseSystem = "placidus" | "whole-sign" | "equal";
   const navigate   = useNavigate();
