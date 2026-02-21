@@ -10,6 +10,7 @@ import AuthGuard from "@/components/AuthGuard";
 import BottomNav from "@/components/BottomNav";
 import PostComposerSheet from "@/components/PostComposerSheet";
 import DesktopSidebar from "@/components/DesktopSidebar";
+import { useAuth } from "@/hooks/useAuth";
 import RootRedirect from "./pages/RootRedirect";
 import SignInPage from "./pages/SignIn";
 import Onboarding from "./pages/Onboarding";
@@ -25,6 +26,7 @@ const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 function AuthedLayout() {
   const [postOpen, setPostOpen] = useState(false);
+  const { signOut } = useAuth();
 
   return (
     <>
@@ -34,7 +36,7 @@ function AuthedLayout() {
           <Outlet context={{ postOpen, setPostOpen }} />
         </div>
       </div>
-      <BottomNav onOpenPost={() => setPostOpen(true)} />
+      <BottomNav onOpenPost={() => setPostOpen(true)} onSignOut={signOut} />
       <PostComposerSheet open={postOpen} onOpenChange={setPostOpen} />
     </>
   );

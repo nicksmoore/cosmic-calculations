@@ -8,9 +8,10 @@ const tabs = [
 
 interface BottomNavProps {
   onOpenPost: () => void;
+  onSignOut: () => void;
 }
 
-export default function BottomNav({ onOpenPost }: BottomNavProps) {
+export default function BottomNav({ onOpenPost, onSignOut }: BottomNavProps) {
   const location = useLocation();
 
   return (
@@ -47,6 +48,15 @@ export default function BottomNav({ onOpenPost }: BottomNavProps) {
           >
             <span className="text-xl leading-none">⊕</span>
             <span className="text-[10px] hidden sm:block">Post</span>
+          </button>
+
+          <button
+            onClick={onSignOut}
+            aria-label="Sign out"
+            className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors px-3 py-2"
+          >
+            <span className="text-lg leading-none">↩</span>
+            <span className="text-[10px] hidden sm:block">Out</span>
           </button>
         </div>
       </div>

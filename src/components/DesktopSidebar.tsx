@@ -10,7 +10,7 @@ interface DesktopSidebarProps {
 
 export default function DesktopSidebar({ onOpenPost }: DesktopSidebarProps) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { profile } = useProfile();
 
   return (
@@ -62,6 +62,9 @@ export default function DesktopSidebar({ onOpenPost }: DesktopSidebarProps) {
 
         <Button className="w-full" onClick={onOpenPost}>
           New Post
+        </Button>
+        <Button variant="outline" className="w-full" onClick={signOut}>
+          Sign Out
         </Button>
       </div>
     </aside>

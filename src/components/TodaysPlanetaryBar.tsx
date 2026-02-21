@@ -35,7 +35,7 @@ const PlanetChip = ({ planet, natalPlanets, onClick }: PlanetChipProps) => {
     <motion.button
       onClick={onClick}
       className={`
-        relative flex items-center gap-1.5 px-3 py-1.5 rounded-full 
+        relative flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-full 
         backdrop-blur-sm border transition-all cursor-pointer
         hover:scale-105 active:scale-95
         ${hasActiveAspects 
@@ -60,7 +60,7 @@ const PlanetChip = ({ planet, natalPlanets, onClick }: PlanetChipProps) => {
     >
       {/* Planet symbol with color */}
       <span
-        className="text-lg font-medium"
+        className="text-lg md:text-2xl font-medium"
         style={{ color: planet.color }}
       >
         {planet.symbol}
@@ -68,20 +68,20 @@ const PlanetChip = ({ planet, natalPlanets, onClick }: PlanetChipProps) => {
 
       {/* Sign info */}
       <div className="flex items-center gap-0.5">
-        <span className="text-sm text-foreground/80">{signInfo.symbol}</span>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-sm md:text-base text-foreground/80">{signInfo.symbol}</span>
+        <span className="text-xs md:text-sm text-muted-foreground">
           {Math.floor(planet.degree)}°
         </span>
       </div>
 
       {/* Retrograde indicator */}
       {planet.isRetrograde && (
-        <span className="text-xs text-amber-500 font-medium">℞</span>
+        <span className="text-xs md:text-sm text-amber-500 font-medium">℞</span>
       )}
 
       {/* Return indicator */}
       {isReturn && (
-        <span className="text-xs text-primary">✨</span>
+        <span className="text-xs md:text-sm text-primary">✨</span>
       )}
 
       {/* Active indicator dot */}
@@ -155,6 +155,10 @@ const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
 
   const mercuryIsRetrograde = transits.planets.find(p => p.name === "Mercury")?.isRetrograde === true;
 
+  const desktopPlanets = transits.planets.slice(0, 11);
+  const desktopTopRow = desktopPlanets.slice(0, 5);
+  const desktopBottomRow = desktopPlanets.slice(5);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
@@ -166,11 +170,11 @@ const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
       }`}
     >
       {/* Header Row */}
-      <div className="flex items-center px-4 py-3 gap-4 border-b border-border/20">
+      <div className="flex items-center px-5 py-4 gap-4 border-b border-border/20">
         <div className="flex items-center gap-2 shrink-0">
           <Sparkles className="h-4 w-4 text-primary" />
           <div className="text-sm">
-            <span className="text-foreground font-medium">Today's Cosmic Weather</span>
+            <span className="text-foreground font-medium">Today's Transits</span>
             <span className="text-xs text-muted-foreground ml-2">{dateString}</span>
           </div>
         </div>
@@ -201,8 +205,8 @@ const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
       </div>
 
       {/* Planets - wrap on desktop, horizontal scroll on mobile */}
-      <div className="px-4 py-3">
-        <p className="text-xs text-muted-foreground mb-2">Tap a planet to see what it means for you today</p>
+      <div className="px-5 py-4">
+        <p className="text-sm text-muted-foreground mb-3">Tap a planet to see what it means for you today</p>
         <div className="md:hidden">
           <ScrollArea className="w-full">
             <div className="flex items-center gap-3 pb-2">
@@ -218,15 +222,27 @@ const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
             <ScrollBar orientation="horizontal" className="h-1.5" />
           </ScrollArea>
         </div>
-        <div className="hidden md:flex md:flex-wrap md:gap-3">
-          {transits.planets.map((planet) => (
-            <PlanetChip
-              key={planet.name}
-              planet={planet}
-              natalPlanets={natalPlanets.map((p) => ({ name: p.name, sign: p.sign }))}
-              onClick={() => handlePlanetClick(planet)}
-            />
-          ))}
+        <div className="hidden md:flex md:flex-col md:gap-3">
+          <div className="flex items-center justify-center gap-3">
+            {desktopTopRow.map((planet) => (
+              <PlanetChip
+                key={planet.name}
+                planet={planet}
+                natalPlanets={natalPlanets.map((p) => ({ name: p.name, sign: p.sign }))}
+                onClick={() => handlePlanetClick(planet)}
+              />
+            ))}
+          </div>
+          <div className="flex items-center justify-center gap-3">
+            {desktopBottomRow.map((planet) => (
+              <PlanetChip
+                key={planet.name}
+                planet={planet}
+                natalPlanets={natalPlanets.map((p) => ({ name: p.name, sign: p.sign }))}
+                onClick={() => handlePlanetClick(planet)}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
