@@ -55,12 +55,42 @@ export function useProfile() {
           console.warn("Supabase token unavailable during profile fetch:", tokenError);
         }
 
+        if (token) {
+          const { data: fnData, error: fnError } = await supabase.functions.invoke("upsert-profile", {
+            body: { mode: "fetch", userId: user.id },
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (!fnError) {
+            setProfile((fnData?.profile as Profile | null) ?? null);
+            return;
+          }
+        }
+
         const client = token ? getAuthenticatedClient(token) : supabase;
         const { data, error } = await (client as any)
           .from("profiles")
           .select("*")
           .eq("user_id", user.id)
           .single();
+
+        const isJwtKeyError =
+          error &&
+          ((typeof error.message === "string" &&
+            error.message.toLowerCase().includes("no suitable key or wrong key type")) ||
+            error.code === "PGRST301");
+
+        if (isJwtKeyError && token) {
+          const { data: fnData, error: fnError } = await supabase.functions.invoke("upsert-profile", {
+            body: { mode: "fetch", userId: user.id },
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (!fnError) {
+            setProfile((fnData?.profile as Profile | null) ?? null);
+            return;
+          }
+        }
 
         if (error && error.code !== "PGRST116") {
           console.error("Error fetching profile:", error);
@@ -91,6 +121,19 @@ export function useProfile() {
         console.warn("Supabase token unavailable during profile update:", tokenError);
       }
 
+      if (token) {
+        const { data: fnData, error: fnError } = await supabase.functions.invoke("upsert-profile", {
+          body: { mode: "upsert", userId: user.id, updates },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!fnError && fnData?.profile) {
+          setProfile(fnData.profile as Profile);
+          toast({ title: "Profile updated" });
+          return true;
+        }
+      }
+
       const client = token ? getAuthenticatedClient(token) : supabase;
 
       const { data, error } = await (client as any)
@@ -100,6 +143,23 @@ export function useProfile() {
         .single();
 
       if (error) {
+        const isJwtKeyError =
+          typeof error.message === "string" &&
+          error.message.toLowerCase().includes("no suitable key or wrong key type");
+
+        if (isJwtKeyError && token) {
+          const { data: fnData, error: fnError } = await supabase.functions.invoke("upsert-profile", {
+            body: { userId: user.id, updates },
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (!fnError && fnData?.profile) {
+            setProfile(fnData.profile as Profile);
+            toast({ title: "Profile updated" });
+            return true;
+          }
+        }
+
         console.error("Error updating profile:", error);
         toast({ variant: "destructive", title: "Update failed", description: error.message });
         return false;

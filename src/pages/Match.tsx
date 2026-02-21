@@ -1,10 +1,15 @@
 // src/pages/Match.tsx
 import { motion } from "framer-motion";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Search, Sparkles, UserCheck, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import StarField from "@/components/StarField";
 import { useMatchFeed, MatchProfile } from "@/hooks/useMatchFeed";
+import { useProfileDirectory, DirectoryProfile } from "@/hooks/useProfileDirectory";
+import { useToggleFollow } from "@/hooks/useFollow";
+import { useState } from "react";
 
 const SIGN_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -60,14 +65,65 @@ function MatchCard({ match, onClick }: { match: MatchProfile; onClick: () => voi
   );
 }
 
+function DirectoryCard({
+  profile,
+  onClick,
+}: {
+  profile: DirectoryProfile;
+  onClick: () => void;
+}) {
+  const toggleFollow = useToggleFollow(profile.user_id);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="glass-panel rounded-xl p-4"
+    >
+      <div className="flex items-center gap-3">
+        <button onClick={onClick} className="flex-shrink-0">
+          <Avatar className="h-10 w-10 border border-border/30">
+            <AvatarImage src={profile.avatar_url ?? undefined} />
+            <AvatarFallback className="bg-primary/20 text-primary text-sm font-serif">
+              {(profile.display_name ?? "?").charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </button>
+
+        <div className="min-w-0 flex-1">
+          <button onClick={onClick} className="text-left">
+            <p className="font-medium text-sm truncate">{profile.display_name ?? "Cosmic Traveler"}</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {profile.current_status || "No current vibe set"}
+            </p>
+          </button>
+        </div>
+
+        <Button
+          size="sm"
+          variant={profile.is_following ? "outline" : "default"}
+          disabled={toggleFollow.isPending}
+          className="gap-1.5"
+          onClick={() => toggleFollow.mutate(profile.is_following)}
+        >
+          {profile.is_following ? <UserCheck className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
+          {profile.is_following ? "Friend" : "Add"}
+        </Button>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function Match() {
   const navigate = useNavigate();
+  const [search, setSearch] = useState("");
   const { data: matches, isLoading, isError } = useMatchFeed();
+  const { data: directory, isLoading: directoryLoading } = useProfileDirectory(search);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <StarField />
-      <main className="container mx-auto px-4 pt-6 pb-28 max-w-2xl relative z-10">
+      <main className="mx-auto w-full max-w-6xl px-4 pt-6 pb-28 md:px-8 md:pb-10 relative z-10">
         <motion.h1
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -75,6 +131,31 @@ export default function Match() {
         >
           Cosmic Match
         </motion.h1>
+
+        <div className="glass-panel rounded-xl p-4 mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <p className="text-sm font-medium">Find Friends</p>
+          </div>
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by display name or user id..."
+            className="bg-input/40 border-border/40"
+          />
+          <div className="mt-3 space-y-2">
+            {(directory ?? []).slice(0, 8).map((p) => (
+              <DirectoryCard
+                key={p.user_id}
+                profile={p}
+                onClick={() => navigate(`/profile/${p.user_id}`)}
+              />
+            ))}
+            {directoryLoading && (
+              <div className="text-xs text-muted-foreground py-2">Searching profiles...</div>
+            )}
+          </div>
+        </div>
 
         {isLoading && (
           <div className="flex justify-center py-12" role="status" aria-label="Loading matches">
@@ -96,6 +177,7 @@ export default function Match() {
           </div>
         )}
 
+        <h2 className="text-sm uppercase tracking-wider text-muted-foreground mb-3">Suggested Synastry</h2>
         <div className="space-y-3">
           {(matches ?? []).map((match) => (
             <MatchCard

@@ -1,3 +1,4 @@
+// src/pages/PublicProfile.tsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Loader2, Lock, UserPlus, UserCheck } from "lucide-react";
@@ -14,9 +15,12 @@ import NatalChartWheel from "@/components/NatalChartWheel";
 import PlanetDetails from "@/components/PlanetDetails";
 import HouseDetails from "@/components/HouseDetails";
 import { Planet, House } from "@/data/natalChartData";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import {
+  Drawer, DrawerContent, DrawerHeader, DrawerTitle,
+} from "@/components/ui/drawer";
 import { useFollowStatus, useFollowCounts, useToggleFollow } from "@/hooks/useFollow";
 import { useAuth } from "@/hooks/useAuth";
+import { timezoneFromLongitude } from "@/lib/timezone";
 
 const SIGN_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -31,23 +35,22 @@ function scoreRing(score: number) {
 }
 
 function profileToBirthData(p: Profile): BirthData | null {
-  if (!p.birth_date || p.birth_lat == null || p.birth_lng == null) return null;
+  if (!p.birth_date || !p.birth_lat || !p.birth_lng) return null;
   return {
-    name: p.display_name ?? "Unknown",
-    birthDate: p.birth_date,
-    birthTime: p.birth_time ?? "12:00",
+    name:        p.display_name ?? "Unknown",
+    birthDate:   p.birth_date,
+    birthTime:   p.birth_time ?? "12:00",
     timeUnknown: p.time_unknown ?? false,
-    location: p.birth_location ?? "",
-    latitude: p.birth_lat,
-    longitude: p.birth_lng,
-    timezone: "UTC+0",
+    location:    p.birth_location ?? "",
+    latitude:    p.birth_lat,
+    longitude:   p.birth_lng,
+    timezone:    timezoneFromLongitude(p.birth_lng),
   };
 }
 
 export default function PublicProfile() {
-  const params = useParams<{ userId?: string; id?: string }>();
-  const userId = params.userId ?? params.id;
-  const navigate = useNavigate();
+  const { userId }  = useParams<{ userId: string }>();
+  const navigate    = useNavigate();
   const { user: currentUser } = useAuth();
   const { profile: myProfile } = useProfile();
   const { data: isFollowing } = useFollowStatus(userId);
@@ -55,13 +58,14 @@ export default function PublicProfile() {
   const toggleFollow = useToggleFollow(userId);
 
   const [theirProfile, setTheirProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading,      setLoading]      = useState(true);
   const [selectedPlanet, setSelectedPlanet] = useState<Planet | null>(null);
-  const [selectedHouse, setSelectedHouse] = useState<House | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedHouse,  setSelectedHouse]  = useState<House | null>(null);
+  const [drawerOpen,     setDrawerOpen]     = useState(false);
 
   useEffect(() => {
     if (!userId) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (supabase as any)
       .from("profiles")
       .select("*")
@@ -73,9 +77,9 @@ export default function PublicProfile() {
       });
   }, [userId]);
 
-  const myBirthData = myProfile ? profileToBirthData(myProfile) : null;
+  const myBirthData    = myProfile ? profileToBirthData(myProfile) : null;
   const theirBirthData = theirProfile ? profileToBirthData(theirProfile) : null;
-  const { chartData: myChartData } = useEphemeris(myBirthData);
+  const { chartData: myChartData }    = useEphemeris(myBirthData);
   const { chartData: theirChartData } = useEphemeris(theirBirthData);
 
   const compatScore = myChartData && theirChartData
@@ -116,14 +120,21 @@ export default function PublicProfile() {
     <div className="min-h-screen bg-background text-foreground">
       <StarField />
       <main className="container mx-auto px-4 pt-6 pb-28 max-w-2xl relative z-10">
+
         <Button variant="ghost" size="sm" onClick={() => navigate("/match")} className="gap-2 mb-6">
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
 
+        {/* Identity Header */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+          {/* Avatar with CompatibilityPulse ring */}
           <div className="relative inline-block mb-4">
-            <Avatar className={`h-24 w-24 border-4 ${compatScore !== null ? scoreRing(compatScore) : "border-primary/30"}`}>
+            <Avatar
+              className={`h-24 w-24 border-4 ${
+                compatScore !== null ? scoreRing(compatScore) : "border-primary/30"
+              }`}
+            >
               <AvatarImage src={theirProfile.avatar_url ?? undefined} />
               <AvatarFallback className="bg-primary/20 text-primary text-2xl font-serif">
                 {(theirProfile.display_name ?? "?").charAt(0).toUpperCase()}
@@ -140,6 +151,7 @@ export default function PublicProfile() {
             {theirProfile.display_name ?? "Cosmic Traveler"}
           </h1>
 
+          {/* Follow button + counts — only show if not viewing own profile */}
           {currentUser && currentUser.id !== userId && (
             <div className="flex items-center justify-center gap-4 mb-4">
               <Button
@@ -162,10 +174,11 @@ export default function PublicProfile() {
             </div>
           )}
 
+          {/* Big Three */}
           <div className="flex justify-center gap-6 mb-4">
             {[
-              { label: "Sun", sign: theirProfile.sun_sign },
-              { label: "Moon", sign: theirProfile.moon_sign },
+              { label: "Sun",    sign: theirProfile.sun_sign },
+              { label: "Moon",   sign: theirProfile.moon_sign },
               { label: "Rising", sign: theirProfile.rising_sign },
             ].map(({ label, sign }) => (
               <div key={label} className="text-center">
@@ -182,6 +195,7 @@ export default function PublicProfile() {
           )}
         </motion.div>
 
+        {/* Chart */}
         {theirBirthData && theirChartData && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
             <NatalChartWheel
@@ -197,6 +211,7 @@ export default function PublicProfile() {
           </motion.div>
         )}
 
+        {/* Bio sections (read-only) */}
         {theirProfile.bio && (
           <div className="glass-panel p-4 rounded-xl mb-4">
             <h3 className="font-serif text-lg text-foreground mb-2">About</h3>
@@ -232,6 +247,7 @@ export default function PublicProfile() {
         )}
       </main>
 
+      {/* Planetary Drawer */}
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
         <DrawerContent className="glass-panel border-border/30 max-h-[60vh]">
           <DrawerHeader>
@@ -244,8 +260,12 @@ export default function PublicProfile() {
             </DrawerTitle>
           </DrawerHeader>
           <div className="px-4 pb-6 overflow-y-auto">
-            {selectedPlanet && theirChartData && <PlanetDetails planet={selectedPlanet} />}
-            {selectedHouse && theirChartData && <HouseDetails house={selectedHouse} planets={theirChartData.planets} />}
+            {selectedPlanet && theirChartData && (
+              <PlanetDetails planet={selectedPlanet} />
+            )}
+            {selectedHouse && theirChartData && (
+              <HouseDetails house={selectedHouse} planets={theirChartData.planets} />
+            )}
           </div>
         </DrawerContent>
       </Drawer>

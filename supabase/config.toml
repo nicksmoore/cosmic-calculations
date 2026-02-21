@@ -2,3 +2,21 @@ project_id = "gfstgychspadmxhkxckc"
 
 [functions.extract-chart-from-pdf]
 verify_jwt = false
+
+[functions.upsert-profile]
+verify_jwt = false
+
+[functions.create-post]
+verify_jwt = false
+
+[functions.delete-post]
+verify_jwt = false
+
+[functions.toggle-follow]
+verify_jwt = false
+
+[functions.search-profiles]
+verify_jwt = false
+
+[functions.astro-copy]
+verify_jwt = false

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { calculateChart as celestineCalculateChart } from "celestine";
+import { calculateChart as fallbackCalculateChart } from "@/lib/ephemeris";
 import { NatalChartData, Planet, House, ChartAngles, zodiacSigns } from "@/data/natalChartData";
 import { HouseSystem } from "@/components/ChartDashboard";
 import { ZodiacSystem } from "@/components/ZodiacSystemSelector";
@@ -18,6 +19,15 @@ const PLANET_SYMBOLS: Record<string, string> = {
   Neptune: "♆",
   Pluto: "♇",
   Chiron: "⚷",
+  Ceres: "⚳",
+  Pallas: "⚴",
+  Juno: "⚵",
+  Vesta: "⚶",
+  Eris: "⯰",
+  Hygiea: "H",
+  Psyche: "Ψ",
+  Eros: "E",
+  Makemake: "M",
   NorthNode: "☊",
   SouthNode: "☋",
   Lilith: "⚸",
@@ -36,6 +46,15 @@ const PLANET_DESCRIPTIONS: Record<string, string> = {
   Neptune: "Your spirituality and imagination. Neptune dissolves boundaries, bringing dreams, illusions, and transcendence.",
   Pluto: "Your transformation and power. Pluto represents death/rebirth cycles, intensity, and profound change.",
   Chiron: "Your deepest wound and healing gift. Chiron represents where you've been hurt and where you can help others heal.",
+  Ceres: "Nourishment and care patterns. Ceres shows how you give and receive support.",
+  Pallas: "Strategic intelligence and pattern recognition. Pallas reflects wisdom in action.",
+  Juno: "Commitment and long-term partnership values. Juno shows what you need in devoted bonds.",
+  Vesta: "Sacred devotion and focused dedication. Vesta reflects where your inner flame burns brightest.",
+  Eris: "Disruption that reveals truth. Eris points to unrest that catalyzes needed change.",
+  Hygiea: "Healing rituals and wellbeing maintenance. Hygiea highlights your health stewardship.",
+  Psyche: "Soul sensitivity and deep emotional attunement. Psyche reveals subtle receptivity.",
+  Eros: "Desire, attraction, and creative passion. Eros marks what magnetizes your life force.",
+  Makemake: "Creation through ingenuity and adaptation. Makemake highlights inventive growth.",
   NorthNode: "Your soul's direction and destiny. The North Node points toward growth, lessons, and your life path.",
   SouthNode: "Your past life gifts and comfort zone. The South Node represents innate talents and what to release.",
   Lilith: "Your shadow self and primal power. Black Moon Lilith represents raw feminine energy, independence, and taboos.",
@@ -253,7 +272,11 @@ export const useEphemeris = (
       });
 
       // Build planets from celestine - map to our format
-      const mainPlanets = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"];
+      const mainPlanets = [
+        "Sun", "Moon", "Mercury", "Venus", "Mars",
+        "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto",
+        "Chiron", "Ceres", "Pallas", "Juno", "Vesta",
+      ];
       
       const planets: Planet[] = celestineChart.planets
         .filter(p => mainPlanets.includes(p.body))
@@ -276,6 +299,40 @@ export const useEphemeris = (
             dms,
           };
         });
+
+      // Celestine does not expose Lilith; supplement it from internal ephemeris.
+      try {
+        const supplemental = fallbackCalculateChart({
+          year,
+          month,
+          day,
+          hour,
+          minute,
+          second: 0,
+          latitude: birthData.latitude,
+          longitude: birthData.longitude,
+          timezone: timezoneOffsetHours,
+        });
+        const lilith = supplemental.planets.find((p) => p.name === "lilith");
+        if (lilith) {
+          const lilithLon = adjustLongitude(lilith.longitude);
+          const lilithSign = longitudeToSign(lilithLon);
+          planets.push({
+            name: "Lilith",
+            symbol: PLANET_SYMBOLS.Lilith,
+            sign: lilithSign.sign.name,
+            signSymbol: lilithSign.sign.symbol,
+            house: findHouseForPlanet(lilithLon, houseCusps),
+            degree: lilithSign.degree,
+            longitude: lilithLon,
+            isRetrograde: false,
+            description: PLANET_DESCRIPTIONS.Lilith,
+            dms: formatDMS(lilithLon),
+          });
+        }
+      } catch {
+        // Ignore supplemental failures and keep base chart.
+      }
 
       const chartData: NatalChartData = {
         angles,

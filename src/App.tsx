@@ -1,3 +1,4 @@
+// src/App.tsx
 import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,15 +9,16 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import AuthGuard from "@/components/AuthGuard";
 import BottomNav from "@/components/BottomNav";
 import PostComposerSheet from "@/components/PostComposerSheet";
+import DesktopSidebar from "@/components/DesktopSidebar";
+import { useAuth } from "@/hooks/useAuth";
 import RootRedirect from "./pages/RootRedirect";
 import SignInPage from "./pages/SignIn";
 import Onboarding from "./pages/Onboarding";
 import TransitDetail from "./pages/TransitDetail";
 import Profile from "./pages/Profile";
-import Discover from "./pages/Discover";
-import PublicProfile from "./pages/PublicProfile";
 import Feed from "./pages/Feed";
 import Match from "./pages/Match";
+import PublicProfile from "./pages/PublicProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,11 +26,17 @@ const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 function AuthedLayout() {
   const [postOpen, setPostOpen] = useState(false);
+  const { signOut } = useAuth();
 
   return (
     <>
-      <Outlet context={{ postOpen, setPostOpen }} />
-      <BottomNav onOpenPost={() => setPostOpen(true)} />
+      <div className="min-h-screen md:grid md:grid-cols-[18rem_minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)]">
+        <DesktopSidebar onOpenPost={() => setPostOpen(true)} />
+        <div className="min-w-0">
+          <Outlet context={{ postOpen, setPostOpen }} />
+        </div>
+      </div>
+      <BottomNav onOpenPost={() => setPostOpen(true)} onSignOut={signOut} />
       <PostComposerSheet open={postOpen} onOpenChange={setPostOpen} />
     </>
   );
@@ -56,6 +64,7 @@ const App = () => (
                 </AuthGuard>
               }
             />
+            {/* Authenticated routes with bottom nav */}
             <Route
               element={
                 <AuthGuard>
@@ -65,9 +74,8 @@ const App = () => (
             >
               <Route path="/feed" element={<Feed />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/profile/:userId" element={<PublicProfile />} />
-              <Route path="/discover" element={<Discover />} />
               <Route path="/match" element={<Match />} />
+              <Route path="/profile/:userId" element={<PublicProfile />} />
               <Route path="/transit" element={<TransitDetail />} />
             </Route>
             <Route path="*" element={<NotFound />} />

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ChevronDown } from "lucide-react";
+import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 import { useDailyTransits } from "@/hooks/useDailyTransits";
-import { CollectiveTransit } from "@/lib/transitEngine";
+import { useForecastCopy, useTransitEnergyCopy } from "@/hooks/useAstroCopy";
 
 function useCountdown(targetIso: string | null) {
   const [timeLeft, setTimeLeft] = useState("");
@@ -63,57 +63,10 @@ function ProgressBar({ targetIso }: { targetIso: string | null }) {
   );
 }
 
-function CollectiveForecastSheet({
-  transits,
-  onClose,
-}: {
-  transits: CollectiveTransit[];
-  onClose: () => void;
-}) {
-  return (
-    <motion.div
-      className="fixed inset-0 z-50 flex items-end"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-    >
-      <div className="absolute inset-0 bg-black/60" />
-      <motion.div
-        className="relative w-full glass-panel rounded-t-2xl p-6 pb-10 max-h-[70vh] overflow-y-auto"
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-lg font-serif text-ethereal mb-4">Collective Forecast</h3>
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Close forecast"
-        >
-          ✕
-        </button>
-        {transits.length === 0 && (
-          <p className="text-muted-foreground text-sm">A quiet cosmic day — ideal for inner reflection.</p>
-        )}
-        {transits.map((t) => (
-          <div key={t.transit_key} className="mb-4 pb-4 border-b border-border/30 last:border-0">
-            <p className="font-medium text-sm">{t.display_name}</p>
-            <p className="text-muted-foreground text-xs mt-1">{t.vibe}</p>
-            <p className="text-muted-foreground text-xs">
-              Orb: {t.orb.toFixed(1)}° · {t.is_applying ? "Applying" : "Separating"}
-            </p>
-          </div>
-        ))}
-      </motion.div>
-    </motion.div>
-  );
-}
-
 export default function DailyHookCard() {
   const { data, isLoading } = useDailyTransits();
-  const [showSheet, setShowSheet] = useState(false);
+  const { data: forecast } = useForecastCopy(data ?? null);
+  const { data: transitEnergy } = useTransitEnergyCopy(data ?? null);
   const countdown = useCountdown(data?.aspect_precision ?? null);
 
   if (isLoading) {
@@ -122,63 +75,68 @@ export default function DailyHookCard() {
 
   if (!data) return null;
 
+  const fallbackEnergyParagraph = (() => {
+    const top = (data.transits ?? []).slice(0, 4);
+    if (top.length === 0) {
+      return "Today feels subtle but meaningful. Small adjustments and steady attention can create more momentum than pushing hard.";
+    }
+    const names = top.map((t) => t.display_name).join(", ");
+    return `Today's transits are working together through ${names}. The overall tone is a blend of tension and opportunity, so clear priorities and emotionally honest communication will carry the day.`;
+  })();
+
+  const energyParagraph =
+    transitEnergy?.summary?.trim()
+    || forecast?.summary?.trim()
+    || fallbackEnergyParagraph;
+
   return (
-    <>
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative rounded-xl overflow-hidden mb-6 cursor-pointer"
-        style={{
-          background: "linear-gradient(135deg, #1a0533 0%, #0d1b4b 50%, #0a2a1a 100%)",
-          boxShadow: "0 0 20px rgba(168, 85, 247, 0.3)",
-        }}
-        role="button"
-        tabIndex={0}
-        aria-label="Open collective forecast"
-        onClick={() => setShowSheet(true)}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setShowSheet(true); } }}
-      >
-        <div className="p-4 sm:p-5">
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles className="h-4 w-4 text-yellow-300" />
-            <span className="text-yellow-300 text-xs uppercase tracking-widest font-medium">
-              Today's Energy
-            </span>
-          </div>
-
-          <h2 className="text-lg sm:text-xl font-serif text-white">
-            {data.dominant_transit}
-          </h2>
-
-          {data.description && (
-            <p className="text-purple-200 text-sm mt-1 line-clamp-1">{data.description}</p>
-          )}
-
-          {data.aspect_precision && (
-            <div className="mt-3">
-              <div className="flex items-center justify-between text-xs text-purple-200">
-                <span>Peak Intensity</span>
-                <span className="font-mono">{countdown || "—"}</span>
-              </div>
-              <ProgressBar targetIso={data.aspect_precision} />
-            </div>
-          )}
-
-          <div className="flex items-center gap-1 mt-3 text-purple-300 text-xs">
-            <span>Tap for full forecast</span>
-            <ChevronDown className="h-3 w-3" />
-          </div>
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative rounded-xl overflow-hidden mb-6"
+      style={{
+        background: "linear-gradient(135deg, #1a0533 0%, #0d1b4b 50%, #0a2a1a 100%)",
+        boxShadow: "0 0 20px rgba(168, 85, 247, 0.3)",
+      }}
+      aria-label="Today's full collective forecast"
+    >
+      <div className="p-5 sm:p-6">
+        <div className="flex items-center gap-2 mb-1">
+          <Sparkles className="h-4 w-4 text-yellow-300" />
+          <span className="text-yellow-300 text-xs uppercase tracking-widest font-medium">
+            Today's Energy
+          </span>
         </div>
-      </motion.div>
 
-      <AnimatePresence>
-        {showSheet && (
-          <CollectiveForecastSheet
-            transits={data.transits}
-            onClose={() => setShowSheet(false)}
-          />
+        <h2 className="text-xl sm:text-2xl font-serif text-white">
+          {data.dominant_transit}
+        </h2>
+
+        <p className="text-purple-100 text-sm sm:text-base mt-2 leading-relaxed">
+          {energyParagraph}
+        </p>
+
+        {forecast?.details?.length ? (
+          <div className="mt-4 space-y-3">
+            {forecast.details.map((d, idx) => (
+              <div key={`${d.title}-${idx}`} className="border-t border-white/15 pt-3">
+                <p className="text-white text-sm font-medium">{d.title}</p>
+                <p className="text-purple-200 text-sm mt-1">{d.meaning}</p>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {data.aspect_precision && (
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-xs text-purple-200">
+              <span>Peak Intensity</span>
+              <span className="font-mono">{countdown || "—"}</span>
+            </div>
+            <ProgressBar targetIso={data.aspect_precision} />
+          </div>
         )}
-      </AnimatePresence>
-    </>
+      </div>
+    </motion.div>
   );
 }

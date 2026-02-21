@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Loader2 } from "lucide-react";
+import { Heart, MessageCircle, Loader2, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import { useToggleLike } from "@/hooks/useToggleLike";
 import { useComments, useAddComment, Comment } from "@/hooks/useComments";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useDeletePost } from "@/hooks/useDeletePost";
 
 const PLANET_GLYPHS: Record<string, string> = {
   Sun: "☀", Moon: "☽", Mercury: "☿", Venus: "♀", Mars: "♂",
@@ -172,10 +173,12 @@ interface PostCardProps {
 
 export default function PostCard({ post, currentUserId }: PostCardProps) {
   const toggleLike = useToggleLike();
+  const deletePost = useDeletePost();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const { toast } = useToast();
 
   const handleLike = async () => {
     if (!user) return;
@@ -199,6 +202,20 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
 
   const visibleTags = post.transit_tags.slice(0, 5);
   const extraTagCount = post.transit_tags.length - 5;
+  const isOwner = currentUserId === post.user_id;
+
+  const handleDelete = async () => {
+    if (!isOwner) return;
+    const ok = window.confirm("Delete this post? This action cannot be undone.");
+    if (!ok) return;
+    try {
+      await deletePost.mutateAsync(post.id);
+      toast({ title: "Post deleted" });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      toast({ variant: "destructive", title: "Delete failed", description: message });
+    }
+  };
 
   return (
     <motion.div
@@ -237,6 +254,23 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
               rising={post.rising_sign}
             />
             <div className="flex items-center gap-1 ml-auto flex-shrink-0">
+              {isOwner && (
+                <button
+                  onClick={handleDelete}
+                  aria-label="Delete post"
+                  disabled={deletePost.isPending}
+                  className="text-xs text-muted-foreground/80 hover:text-destructive transition-colors px-2 py-1 rounded-md border border-border/40 hover:border-destructive/50 inline-flex items-center gap-1"
+                >
+                  {deletePost.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete</span>
+                    </>
+                  )}
+                </button>
+              )}
               {post.transit_snapshot && post.transit_snapshot.length > 0 && (
                 <TransitStamp snapshot={post.transit_snapshot} />
               )}

@@ -11,9 +11,11 @@ import { toRomanNumeral } from "@/lib/utils/romanNumerals";
 interface AllHousesGuideProps {
   houses: House[];
   planets: Planet[];
+  houseDescriptions?: Record<string, string> | null;
+  loadingDescriptions?: boolean;
 }
 
-const AllHousesGuide = ({ houses, planets }: AllHousesGuideProps) => {
+const AllHousesGuide = ({ houses, planets, houseDescriptions, loadingDescriptions }: AllHousesGuideProps) => {
   return (
     <Accordion type="single" collapsible className="space-y-2">
       {houses.map((house) => {
@@ -38,7 +40,12 @@ const AllHousesGuide = ({ houses, planets }: AllHousesGuideProps) => {
             </AccordionTrigger>
             <AccordionContent>
               <div className="pl-12 space-y-3 pb-2">
-                <p className="text-sm text-foreground leading-relaxed">{house.description}</p>
+                <p className="text-sm text-foreground leading-relaxed">
+                  {houseDescriptions?.[String(house.number)]
+                    ?? (loadingDescriptions
+                      ? "Generating detailed interpretation..."
+                      : house.description)}
+                </p>
                 <div className="text-xs text-muted-foreground">Cusp: {house.cusp.toFixed(2)}°</div>
                 {planetsInHouse.length > 0 && (
                   <div className="flex flex-wrap gap-2">

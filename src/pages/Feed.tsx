@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useEphemeris } from "@/hooks/useEphemeris";
 import { BirthData } from "@/components/intake/BirthDataForm";
+import { timezoneFromLongitude } from "@/lib/timezone";
 
 function FeedList() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useFeed();
@@ -85,7 +86,7 @@ export default function Feed() {
         location: profile.birth_location ?? "",
         latitude: profile.birth_lat,
         longitude: profile.birth_lng,
-        timezone: "UTC+0",
+        timezone: timezoneFromLongitude(profile.birth_lng),
       }
     : null;
 
@@ -94,7 +95,7 @@ export default function Feed() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <StarField />
-      <main className="container mx-auto px-4 pt-6 pb-28 max-w-2xl relative z-10">
+      <main className="mx-auto w-full max-w-6xl px-4 pt-6 pb-28 md:px-8 md:pb-10 relative z-10">
         {/* Sky Header */}
         {chartData && (
           <div className="mb-4">
