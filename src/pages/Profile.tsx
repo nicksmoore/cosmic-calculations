@@ -1,7 +1,8 @@
 // src/pages/Profile.tsx
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Edit2, Save, Globe, Lock, Sparkles, Loader2, Info } from "lucide-react";
+import { Edit2, Save, Globe, Lock, Sparkles, Info } from "lucide-react";
+import { CosmicLoaderPage } from "@/components/ui/CosmicLoader";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -227,9 +228,7 @@ const ProfilePage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Loading">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
-      </div>
+      <CosmicLoaderPage />
     );
   }
 
@@ -240,13 +239,26 @@ const ProfilePage = () => {
 
         {/* ── Zone 1: Identity Header ── */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-          {/* Avatar */}
-          <Avatar className="h-24 w-24 mx-auto mb-4 border-2 border-primary/30 nebula-glow">
-            <AvatarImage src={user?.user_metadata?.avatar_url || user?.user_metadata?.picture} />
-            <AvatarFallback className="bg-primary/20 text-primary text-2xl font-serif">
-              {(form.display_name || user?.email || "?").charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          {/* Avatar with spinning conic-gradient ring */}
+          <div className="relative w-24 h-24 mx-auto mb-4">
+            {/* Rotating conic ring */}
+            <div
+              className="absolute inset-[-3px] rounded-full z-0"
+              style={{
+                background: "conic-gradient(from 0deg, hsl(275 80% 62%), hsl(45 100% 50%), hsl(200 80% 65%), hsl(275 80% 62%))",
+                animation: "orbit 5s linear infinite",
+              }}
+            />
+            {/* Dark gap between ring and avatar */}
+            <div className="absolute inset-[2px] rounded-full bg-background z-10" />
+            {/* Avatar */}
+            <Avatar className="h-full w-full relative z-20">
+              <AvatarImage src={user?.user_metadata?.avatar_url || user?.user_metadata?.picture} />
+              <AvatarFallback className="bg-primary/20 text-primary text-2xl font-serif">
+                {(form.display_name || user?.email || "?").charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </div>
 
           {/* Display name */}
           {isEditing ? (

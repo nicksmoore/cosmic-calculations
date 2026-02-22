@@ -32,7 +32,7 @@ export default function PostComposerSheet({ open, onOpenChange }: PostComposerSh
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="glass-panel border-border/30 max-w-2xl mx-auto">
+      <DrawerContent className="glass-lg border-border/40 max-w-2xl mx-auto">
         <DrawerHeader>
           <DrawerTitle className="font-serif text-ethereal">Share with the cosmos</DrawerTitle>
         </DrawerHeader>

@@ -21,8 +21,8 @@
     --popover-foreground: 45 20% 95%;
 
     /* Nebula Violet Primary */
-    --primary: 275 100% 25%;
-    --primary-foreground: 45 20% 95%;
+    --primary: 275 80% 62%;
+    --primary-foreground: 0 0% 100%;
 
     /* Secondary - Deeper Obsidian */
     --secondary: 235 20% 15%;
@@ -49,16 +49,16 @@
     /* Sidebar */
     --sidebar-background: 235 25% 8%;
     --sidebar-foreground: 45 20% 90%;
-    --sidebar-primary: 275 100% 25%;
-    --sidebar-primary-foreground: 45 20% 95%;
+    --sidebar-primary: 275 80% 62%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 235 20% 15%;
     --sidebar-accent-foreground: 45 20% 90%;
     --sidebar-border: 275 30% 20%;
-    --sidebar-ring: 275 80% 40%;
+    --sidebar-ring: 275 70% 75%;
 
     /* Custom Cosmic Connections Tokens */
-    --nebula: 275 100% 25%;
-    --nebula-glow: 275 80% 40%;
+    --nebula: 275 80% 62%;
+    --nebula-glow: 275 70% 75%;
     --gold: 45 100% 50%;
     --gold-dim: 45 80% 35%;
     --obsidian: 235 25% 7%;
@@ -80,8 +80,8 @@
     --popover: 235 20% 11%;
     --popover-foreground: 45 20% 95%;
 
-    --primary: 275 100% 25%;
-    --primary-foreground: 45 20% 95%;
+    --primary: 275 80% 62%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 235 20% 15%;
     --secondary-foreground: 45 20% 95%;
@@ -101,12 +101,12 @@
 
     --sidebar-background: 235 25% 8%;
     --sidebar-foreground: 45 20% 90%;
-    --sidebar-primary: 275 100% 25%;
-    --sidebar-primary-foreground: 45 20% 95%;
+    --sidebar-primary: 275 80% 62%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 235 20% 15%;
     --sidebar-accent-foreground: 45 20% 90%;
     --sidebar-border: 275 30% 20%;
-    --sidebar-ring: 275 80% 40%;
+    --sidebar-ring: 275 70% 75%;
   }
 }
 
@@ -127,12 +127,57 @@
 }
 
 @layer components {
-  /* Glassmorphism Panel */
+  /* Aurora bar — animated gradient sweep pinned to top of viewport */
+  .aurora-bar {
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(275 80% 70%) 25%,
+      hsl(45 100% 60%) 50%,
+      hsl(200 80% 65%) 75%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: aurora-sweep 5s ease-in-out infinite;
+  }
+
+  @keyframes aurora-sweep {
+    0%, 100% { background-position: 0% 0%; opacity: 0.5; }
+    50%       { background-position: 100% 0%; opacity: 1; }
+  }
+
+  /* Glassmorphism Tiers */
+  .glass-xs {
+    background: hsl(235 20% 15% / 0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid hsl(275 40% 30% / 0.15);
+    border-radius: var(--radius);
+  }
+
+  .glass-sm {
+    background: hsl(235 20% 15% / 0.50);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid hsl(275 40% 30% / 0.22);
+    border-radius: var(--radius);
+  }
+
+  /* Glassmorphism Panel — default tier */
   .glass-panel {
     background: hsl(var(--glass-bg));
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
     border: 1px solid hsl(var(--glass-border));
+    border-radius: var(--radius);
+  }
+
+  .glass-lg {
+    background: hsl(235 20% 13% / 0.75);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    border: 1px solid hsl(275 40% 30% / 0.40);
     border-radius: var(--radius);
   }
 

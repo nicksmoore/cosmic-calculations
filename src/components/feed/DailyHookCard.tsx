@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { useDailyTransits } from "@/hooks/useDailyTransits";
 import { useForecastCopy, useTransitEnergyCopy } from "@/hooks/useAstroCopy";
+import { getMoonPhase } from "@/lib/moonPhase";
 
 function useCountdown(targetIso: string | null) {
   const [timeLeft, setTimeLeft] = useState("");
@@ -68,6 +69,7 @@ export default function DailyHookCard() {
   const { data: forecast } = useForecastCopy(data ?? null);
   const { data: transitEnergy } = useTransitEnergyCopy(data ?? null);
   const countdown = useCountdown(data?.aspect_precision ?? null);
+  const moonPhase = useMemo(() => getMoonPhase(), []);
 
   if (isLoading) {
     return <div className="h-24 rounded-xl glass-panel animate-pulse mb-6" />;
@@ -95,17 +97,23 @@ export default function DailyHookCard() {
       animate={{ opacity: 1, y: 0 }}
       className="relative rounded-xl overflow-hidden mb-6"
       style={{
-        background: "linear-gradient(135deg, #1a0533 0%, #0d1b4b 50%, #0a2a1a 100%)",
-        boxShadow: "0 0 20px rgba(168, 85, 247, 0.3)",
+        background: "linear-gradient(135deg, #1a0533 0%, #12063d 40%, #1c0a4a 100%)",
+        boxShadow: "0 0 24px rgba(168, 85, 247, 0.35)",
       }}
       aria-label="Today's full collective forecast"
     >
       <div className="p-5 sm:p-6">
-        <div className="flex items-center gap-2 mb-1">
-          <Sparkles className="h-4 w-4 text-yellow-300" />
-          <span className="text-yellow-300 text-xs uppercase tracking-widest font-medium">
-            Today's Energy
-          </span>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-yellow-300" />
+            <span className="text-yellow-300 text-xs uppercase tracking-widest font-medium">
+              Today's Energy
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-purple-200/80" title={moonPhase.name}>
+            <span className="text-base leading-none">{moonPhase.emoji}</span>
+            <span className="hidden sm:inline">{moonPhase.name}</span>
+          </div>
         </div>
 
         <h2 className="text-xl sm:text-2xl font-serif text-white">

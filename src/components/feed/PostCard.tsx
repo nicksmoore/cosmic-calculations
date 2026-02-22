@@ -6,11 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { FeedPost } from "@/hooks/useFeed";
+import { ConstellationDivider } from "@/components/ui/ConstellationDivider";
 import { useToggleLike } from "@/hooks/useToggleLike";
 import { useComments, useAddComment, Comment } from "@/hooks/useComments";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useDeletePost } from "@/hooks/useDeletePost";
+
+const ELEMENT_BORDER: Record<string, string> = {
+  // Fire — warm rose/amber
+  Aries: "border-l-rose-500/70", Leo: "border-l-rose-500/70", Sagittarius: "border-l-orange-400/70",
+  // Earth — emerald
+  Taurus: "border-l-emerald-500/70", Virgo: "border-l-emerald-500/70", Capricorn: "border-l-emerald-600/70",
+  // Air — sky/indigo
+  Gemini: "border-l-sky-400/70", Libra: "border-l-sky-400/70", Aquarius: "border-l-indigo-400/70",
+  // Water — blue/violet
+  Cancer: "border-l-blue-400/70", Scorpio: "border-l-blue-500/70", Pisces: "border-l-violet-400/70",
+};
 
 const PLANET_GLYPHS: Record<string, string> = {
   Sun: "☀", Moon: "☽", Mercury: "☿", Venus: "♀", Mars: "♂",
@@ -34,19 +46,19 @@ function BigThreeGlyphs({
 }) {
   if (!sun && !moon && !rising) return null;
   return (
-    <span className="text-muted-foreground text-sm">
-      {sun && `☉${SIGN_GLYPHS[sun] ?? ""}`}
-      {moon && ` ☽${SIGN_GLYPHS[moon] ?? ""}`}
-      {rising && ` ↑${SIGN_GLYPHS[rising] ?? ""}`}
+    <span className="text-sm tracking-wide flex items-center gap-1">
+      {sun && <span className="text-amber-300/90">☉{SIGN_GLYPHS[sun] ?? ""}</span>}
+      {moon && <span className="text-violet-300/90">☽{SIGN_GLYPHS[moon] ?? ""}</span>}
+      {rising && <span className="text-sky-300/90">↑{SIGN_GLYPHS[rising] ?? ""}</span>}
     </span>
   );
 }
 
 function TransitPillBadge({ tag }: { tag: FeedPost["transit_tags"][0] }) {
   const colorClass = !tag.is_personal
-    ? "bg-blue-500/15 text-blue-300 border-blue-500/25"
+    ? "bg-violet-500/15 text-violet-300 border-violet-500/30"
     : tag.is_primary
-    ? "bg-yellow-500/15 text-yellow-300 border-yellow-500/25"
+    ? "bg-amber-400/15 text-amber-300 border-amber-400/30"
     : "bg-white/5 text-muted-foreground border-border/20";
 
   return (
@@ -169,9 +181,10 @@ function CommentsSection({ postId }: { postId: string }) {
 interface PostCardProps {
   post: FeedPost;
   currentUserId?: string;
+  index?: number;
 }
 
-export default function PostCard({ post, currentUserId }: PostCardProps) {
+export default function PostCard({ post, currentUserId, index = 0 }: PostCardProps) {
   const toggleLike = useToggleLike();
   const deletePost = useDeletePost();
   const { user } = useAuth();
@@ -203,6 +216,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   const visibleTags = post.transit_tags.slice(0, 5);
   const extraTagCount = post.transit_tags.length - 5;
   const isOwner = currentUserId === post.user_id;
+  const elementBorder = post.sun_sign ? (ELEMENT_BORDER[post.sun_sign] ?? "") : "";
 
   const handleDelete = async () => {
     if (!isOwner) return;
@@ -220,9 +234,10 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-panel rounded-xl p-4"
+      transition={{ delay: Math.min(index * 0.07, 0.5), duration: 0.4, ease: "easeOut" }}
+      className={`glass-panel rounded-xl p-4 border-l-2 ${elementBorder}`}
     >
       <div className="flex items-start gap-3 mb-3">
         <button
@@ -297,10 +312,12 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
         </div>
       )}
 
-      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/20">
-        <button
+      <ConstellationDivider className="mt-3" />
+      <div className="flex items-center gap-4">
+        <motion.button
           onClick={handleLike}
           disabled={!user || toggleLike.isPending}
+          whileTap={user ? { scale: 1.3 } : {}}
           aria-label={`Like post, ${post.likes_count + (isLiked ? 1 : 0)} likes`}
           className={`flex items-center gap-1.5 text-xs transition-colors ${
             isLiked
@@ -308,9 +325,18 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
               : "text-muted-foreground hover:text-rose-400"
           }`}
         >
-          <Heart className={`h-4 w-4 ${isLiked ? "fill-rose-400" : ""}`} />
+          <motion.span
+            animate={isLiked
+              ? { scale: [1, 1.5, 0.9, 1.1, 1], rotate: [0, -15, 10, -5, 0] }
+              : { scale: 1, rotate: 0 }
+            }
+            transition={{ duration: 0.45, ease: "easeOut" }}
+            style={{ display: "inline-flex" }}
+          >
+            <Heart className={`h-4 w-4 ${isLiked ? "fill-rose-400" : ""}`} />
+          </motion.span>
           {post.likes_count + (isLiked ? 1 : 0)}
-        </button>
+        </motion.button>
 
         <button
           onClick={() => setShowComments((v) => !v)}

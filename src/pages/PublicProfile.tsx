@@ -1,7 +1,8 @@
 // src/pages/PublicProfile.tsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Lock, UserPlus, UserCheck } from "lucide-react";
+import { ArrowLeft, Lock, UserPlus, UserCheck } from "lucide-react";
+import { CosmicLoaderPage } from "@/components/ui/CosmicLoader";
 import { useParams, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -100,9 +101,7 @@ export default function PublicProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Loading">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
-      </div>
+      <CosmicLoaderPage />
     );
   }
 

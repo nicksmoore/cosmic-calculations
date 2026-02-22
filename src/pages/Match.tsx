@@ -1,6 +1,7 @@
 // src/pages/Match.tsx
 import { motion } from "framer-motion";
-import { Loader2, Search, Sparkles, UserCheck, UserPlus } from "lucide-react";
+import { Search, Sparkles, UserCheck, UserPlus } from "lucide-react";
+import { CosmicLoader } from "@/components/ui/CosmicLoader";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -159,7 +160,7 @@ export default function Match() {
 
         {isLoading && (
           <div className="flex justify-center py-12" role="status" aria-label="Loading matches">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
+            <CosmicLoader size="md" />
           </div>
         )}
 

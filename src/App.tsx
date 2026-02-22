@@ -30,6 +30,7 @@ function AuthedLayout() {
 
   return (
     <>
+      <div className="aurora-bar fixed top-0 left-0 right-0 z-50" aria-hidden="true" />
       <div className="min-h-screen md:grid md:grid-cols-[18rem_minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)]">
         <DesktopSidebar onOpenPost={() => setPostOpen(true)} />
         <div className="min-w-0">

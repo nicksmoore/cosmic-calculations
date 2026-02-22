@@ -1,5 +1,5 @@
 import { useRef, useCallback } from "react";
-import { Loader2 } from "lucide-react";
+import { CosmicLoader } from "@/components/ui/CosmicLoader";
 import TodaysPlanetaryBar from "@/components/TodaysPlanetaryBar";
 import DailyHookCard from "@/components/feed/DailyHookCard";
 import PostCard from "@/components/feed/PostCard";
@@ -30,7 +30,7 @@ function FeedList() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <CosmicLoader size="md" />
       </div>
     );
   }
@@ -54,14 +54,14 @@ function FeedList() {
 
   return (
     <div className="space-y-4">
-      {posts.map(post => (
-        <PostCard key={post.id} post={post} currentUserId={user?.id} />
+      {posts.map((post, i) => (
+        <PostCard key={post.id} post={post} currentUserId={user?.id} index={i} />
       ))}
       {/* Infinite scroll sentinel */}
       <div ref={sentinelRef} className="h-4" />
       {isFetchingNextPage && (
         <div className="flex justify-center py-4">
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          <CosmicLoader size="sm" />
         </div>
       )}
       {!hasNextPage && posts.length > 0 && (
