@@ -29,6 +29,23 @@ const SIGN_SYMBOLS: Record<string, string> = {
   Sagittarius: "♐", Capricorn: "♑", Aquarius: "♒", Pisces: "♓",
 };
 
+const SIGN_COLORS: Record<string, string> = {
+  Aries: "text-red-400", Taurus: "text-emerald-400", Gemini: "text-yellow-300",
+  Cancer: "text-blue-300", Leo: "text-orange-400", Virgo: "text-emerald-300",
+  Libra: "text-pink-300", Scorpio: "text-red-500", Sagittarius: "text-orange-300",
+  Capricorn: "text-stone-300", Aquarius: "text-cyan-400", Pisces: "text-indigo-300",
+};
+
+const ASTEROID_POINTS = [
+  "Ceres",
+  "Pallas",
+  "Juno",
+  "Vesta",
+  "Eris",
+  "Lilith",
+  "Chiron",
+] as const;
+
 function scoreRing(score: number) {
   if (score >= 70) return "border-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.5)]";
   if (score >= 45) return "border-amber-400 shadow-[0_0_16px_rgba(251,191,36,0.5)]";
@@ -82,10 +99,24 @@ export default function PublicProfile() {
   const theirBirthData = theirProfile ? profileToBirthData(theirProfile) : null;
   const { chartData: myChartData }    = useEphemeris(myBirthData);
   const { chartData: theirChartData } = useEphemeris(theirBirthData);
+  const displayedSunSign = theirChartData?.planets.find((p) => p.name === "Sun")?.sign ?? theirProfile?.sun_sign ?? null;
+  const displayedMoonSign = theirChartData?.planets.find((p) => p.name === "Moon")?.sign ?? theirProfile?.moon_sign ?? null;
+  const displayedRisingSign = theirChartData?.angles.ascendant.sign ?? theirProfile?.rising_sign ?? null;
+  const outerPlanets = theirChartData?.planets.filter((p) =>
+    ["Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"].includes(p.name)
+  ) ?? [];
+  const asteroidPoints = ASTEROID_POINTS.map((name) => ({
+    name,
+    planet: theirChartData?.planets.find((p) => p.name === name),
+  })).filter((item) => Boolean(item.planet));
 
   const compatScore = myChartData && theirChartData
     ? calculateCompatibility(myChartData.planets, theirChartData.planets).overall
     : null;
+
+  const openMeaning = (placement: string, sign: string) => {
+    navigate(`/meaning?sign=${encodeURIComponent(sign)}&label=${encodeURIComponent(`${placement} in ${sign}`)}`);
+  };
 
   const handleSelectPlanet = (planet: Planet | null) => {
     setSelectedPlanet(planet);
@@ -100,9 +131,7 @@ export default function PublicProfile() {
   };
 
   if (loading) {
-    return (
-      <CosmicLoaderPage />
-    );
+    return <CosmicLoaderPage />;
   }
 
   if (!theirProfile || !theirProfile.is_public) {
@@ -110,7 +139,7 @@ export default function PublicProfile() {
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center p-8">
         <Lock className="h-10 w-10 text-muted-foreground opacity-50" />
         <p className="text-muted-foreground">This profile is private.</p>
-        <Button variant="ghost" onClick={() => navigate("/match")}>← Back to Match</Button>
+        <Button variant="ghost" onClick={() => navigate("/friends")}>← Back to Starseeds</Button>
       </div>
     );
   }
@@ -120,7 +149,7 @@ export default function PublicProfile() {
       <StarField />
       <main className="container mx-auto px-4 pt-6 pb-28 max-w-2xl relative z-10">
 
-        <Button variant="ghost" size="sm" onClick={() => navigate("/match")} className="gap-2 mb-6">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/friends")} className="gap-2 mb-6">
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
@@ -161,8 +190,8 @@ export default function PublicProfile() {
                 disabled={toggleFollow.isPending}
               >
                 {isFollowing
-                  ? <><UserCheck className="h-4 w-4" /> Following</>
-                  : <><UserPlus className="h-4 w-4" /> Follow</>
+                  ? <><UserCheck className="h-4 w-4" /> Starseeds</>
+                  : <><UserPlus className="h-4 w-4" /> Add Friend</>
                 }
               </Button>
               {followCounts && (
@@ -176,16 +205,66 @@ export default function PublicProfile() {
           {/* Big Three */}
           <div className="flex justify-center gap-6 mb-4">
             {[
-              { label: "Sun",    sign: theirProfile.sun_sign },
-              { label: "Moon",   sign: theirProfile.moon_sign },
-              { label: "Rising", sign: theirProfile.rising_sign },
+              { label: "Sun",    sign: displayedSunSign },
+              { label: "Moon",   sign: displayedMoonSign },
+              { label: "Rising", sign: displayedRisingSign },
             ].map(({ label, sign }) => (
               <div key={label} className="text-center">
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">{label}</p>
-                <p className="text-sm font-serif">{sign ? `${SIGN_SYMBOLS[sign] ?? ""} ${sign}` : "—"}</p>
+                <p className="text-sm font-serif">
+                  {sign ? (
+                    <button
+                      onClick={() => openMeaning(label, sign)}
+                      className="hover:text-primary transition-colors"
+                    >
+                      {`${SIGN_SYMBOLS[sign] ?? ""} ${sign}`}
+                    </button>
+                  ) : "—"}
+                </p>
               </div>
             ))}
           </div>
+
+          {outerPlanets.length > 0 && (
+            <div className="mb-4">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Planetary Signatures</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {outerPlanets.map((planet) => (
+                  <button
+                    key={planet.name}
+                    className="flex items-center gap-1.5 text-xs bg-white/5 border border-border/30 rounded-full px-3 py-1.5 hover:border-primary/40 transition-colors"
+                    onClick={() => openMeaning(planet.name, planet.sign)}
+                  >
+                    <span>{planet.symbol}</span>
+                    <span className="text-muted-foreground">{planet.name}</span>
+                    <span className={SIGN_COLORS[planet.sign] ?? "text-foreground"}>{planet.sign}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {asteroidPoints.length > 0 && (
+            <div className="mb-4">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Asteroids & Points</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {asteroidPoints.map(({ name, planet }) => (
+                  <button
+                    key={name}
+                    className="flex items-center gap-1.5 text-xs border rounded-full px-3 py-1.5 bg-white/5 border-border/30 hover:border-primary/40 transition-colors"
+                    onClick={() => planet?.sign && openMeaning(name, planet.sign)}
+                    disabled={!planet?.sign}
+                  >
+                    <span>{planet?.symbol ?? "•"}</span>
+                    <span className="text-muted-foreground">{name}</span>
+                    <span className={planet ? (SIGN_COLORS[planet.sign] ?? "text-foreground") : "text-muted-foreground"}>
+                      {planet?.sign ?? ""}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {theirProfile.current_status && (
             <p className="text-sm font-serif italic text-muted-foreground">

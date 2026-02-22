@@ -107,7 +107,13 @@ const TransitDetail = () => {
 
   const { planet, natalPlanets } = state;
   const archetype = PLANET_ARCHETYPES[planet.name];
-  const signInfo = ZODIAC_SIGNS[planet.sign] || { symbol: "?", name: planet.sign };
+  const signInfo = ZODIAC_SIGNS[planet.sign] || {
+    symbol: "?",
+    name: planet.sign,
+    element: "Unknown",
+    modality: "Unknown",
+    polarity: "Unknown",
+  };
 
   // Check if this is a planetary return (transiting planet in same sign as natal)
   const natalPlanet = natalPlanets.find((n) => n.name === planet.name);
@@ -154,6 +160,17 @@ const TransitDetail = () => {
           <p className="text-lg text-muted-foreground">
             Currently at {planet.degree.toFixed(1)}° {planet.sign}
           </p>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            <span className="rounded-full border border-border/40 bg-card/50 px-2.5 py-1 text-[11px] uppercase tracking-wider text-foreground/90">
+              Element: {signInfo.element}
+            </span>
+            <span className="rounded-full border border-border/40 bg-card/50 px-2.5 py-1 text-[11px] uppercase tracking-wider text-foreground/90">
+              Modality: {signInfo.modality}
+            </span>
+            <span className="rounded-full border border-border/40 bg-card/50 px-2.5 py-1 text-[11px] uppercase tracking-wider text-foreground/90">
+              Polarity: {signInfo.polarity}
+            </span>
+          </div>
 
           {isReturn && (
             <motion.div

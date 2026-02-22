@@ -12,6 +12,7 @@ import { useComments, useAddComment, Comment } from "@/hooks/useComments";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useDeletePost } from "@/hooks/useDeletePost";
+import PlacementInsightPopover from "@/components/PlacementInsightPopover";
 
 const ELEMENT_BORDER: Record<string, string> = {
   // Fire — warm rose/amber
@@ -46,10 +47,34 @@ function BigThreeGlyphs({
 }) {
   if (!sun && !moon && !rising) return null;
   return (
-    <span className="text-sm tracking-wide flex items-center gap-1">
-      {sun && <span className="text-amber-300/90">☉{SIGN_GLYPHS[sun] ?? ""}</span>}
-      {moon && <span className="text-violet-300/90">☽{SIGN_GLYPHS[moon] ?? ""}</span>}
-      {rising && <span className="text-sky-300/90">↑{SIGN_GLYPHS[rising] ?? ""}</span>}
+    <span className="text-sm tracking-wide inline-flex items-center gap-2">
+      {sun && (
+        <PlacementInsightPopover
+          sign={sun}
+          placementLabel={`Sun in ${sun}`}
+          className="hover:opacity-80 transition-opacity"
+        >
+          <span className="text-amber-300/90">{`☉${SIGN_GLYPHS[sun] ?? ""}`}</span>
+        </PlacementInsightPopover>
+      )}
+      {moon && (
+        <PlacementInsightPopover
+          sign={moon}
+          placementLabel={`Moon in ${moon}`}
+          className="hover:opacity-80 transition-opacity"
+        >
+          <span className="text-violet-300/90">{`☽${SIGN_GLYPHS[moon] ?? ""}`}</span>
+        </PlacementInsightPopover>
+      )}
+      {rising && (
+        <PlacementInsightPopover
+          sign={rising}
+          placementLabel={`Rising in ${rising}`}
+          className="hover:opacity-80 transition-opacity"
+        >
+          <span className="text-sky-300/90">{`↑${SIGN_GLYPHS[rising] ?? ""}`}</span>
+        </PlacementInsightPopover>
+      )}
     </span>
   );
 }
@@ -249,10 +274,12 @@ export default function PostCard({ post, currentUserId, index = 0 }: PostCardPro
             <img
               src={post.avatar_url}
               alt=""
-              className="w-8 h-8 rounded-full hover:opacity-80 transition-opacity"
+              className="w-10 h-10 rounded-full border border-border/40 hover:opacity-80 transition-opacity"
             />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-muted hover:opacity-80 transition-opacity" />
+            <div className="w-10 h-10 rounded-full bg-primary/20 text-primary border border-border/40 hover:opacity-80 transition-opacity flex items-center justify-center text-sm font-serif">
+              {(post.display_name ?? "?").charAt(0).toUpperCase()}
+            </div>
           )}
         </button>
         <div className="min-w-0 flex-1">
@@ -295,7 +322,7 @@ export default function PostCard({ post, currentUserId, index = 0 }: PostCardPro
         </div>
       </div>
 
-      <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+      <p className="text-base leading-relaxed whitespace-pre-wrap break-words">
         {post.content}
       </p>
 

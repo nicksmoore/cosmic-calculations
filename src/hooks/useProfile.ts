@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAuthenticatedClient } from "@/integrations/supabase/authClient";
@@ -24,8 +24,13 @@ export interface Profile {
   venus_bio: string | null;
   mars_bio: string | null;
   current_status: string | null;
+  gender: string | null;
   status_updated_at: string | null;
   is_public: boolean;
+  stripe_connect_account_id: string | null;
+  stripe_payouts_enabled: boolean;
+  stripe_charges_enabled: boolean;
+  stripe_details_submitted: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -36,6 +41,7 @@ export function useProfile() {
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const lastAvatarSyncRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -109,6 +115,47 @@ export function useProfile() {
 
     fetchProfile();
   }, [user]);
+
+  useEffect(() => {
+    if (!user || !profile) return;
+    const desiredAvatar =
+      user.user_metadata?.avatar_url ||
+      user.user_metadata?.picture ||
+      user.avatar ||
+      null;
+    if (!desiredAvatar) return;
+    if (profile.avatar_url === desiredAvatar) return;
+    const syncKey = `${user.id}:${desiredAvatar}`;
+    if (lastAvatarSyncRef.current === syncKey) return;
+    lastAvatarSyncRef.current = syncKey;
+
+    (async () => {
+      try {
+        const token = await getToken({ template: "supabase" });
+        if (!token) return;
+        const { data, error } = await supabase.functions.invoke("upsert-profile", {
+          headers: { Authorization: `Bearer ${token}` },
+          body: {
+            mode: "upsert",
+            userId: user.id,
+            updates: { avatar_url: desiredAvatar },
+          },
+        });
+        if (!error && data?.profile) {
+          setProfile(data.profile as Profile);
+        }
+      } catch (err) {
+        console.warn("Avatar sync failed:", err);
+      }
+    })();
+  }, [
+    user?.id,
+    user?.avatar,
+    user?.user_metadata?.avatar_url,
+    user?.user_metadata?.picture,
+    profile?.avatar_url,
+    getToken,
+  ]);
 
   const updateProfile = useCallback(async (updates: Partial<Profile>) => {
     if (!user) return false;

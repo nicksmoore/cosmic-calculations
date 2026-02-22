@@ -1,9 +1,12 @@
 // src/components/BottomNav.tsx
 import { NavLink, useLocation } from "react-router-dom";
+import { useFriendNotifications } from "@/hooks/useFriendNotifications";
 
 const tabs = [
-  { label: "Sky",   icon: "✦", to: "/feed" },
-  { label: "Match", icon: "⚝", to: "/match" },
+  { label: "Firmament", icon: "🌌", to: "/feed" },
+  { label: "Starseeds", icon: "✨", to: "/friends" },
+  { label: "Bazaar", icon: "🧿", to: "/bazaar" },
+  { label: "11th House", icon: "📹", to: "/live" },
 ] as const;
 
 interface BottomNavProps {
@@ -13,6 +16,8 @@ interface BottomNavProps {
 
 export default function BottomNav({ onOpenPost, onSignOut }: BottomNavProps) {
   const location = useLocation();
+  const { data: friendNotifications } = useFriendNotifications();
+  const friendCount = friendNotifications?.count ?? 0;
 
   return (
     <nav
@@ -30,12 +35,19 @@ export default function BottomNav({ onOpenPost, onSignOut }: BottomNavProps) {
                 aria-label={tab.label}
                 className={`flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center rounded-xl transition-all ${
                   isActive
-                    ? "text-accent [text-shadow:0_0_12px_hsl(var(--accent)/0.8)]"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-accent bg-accent/15 border border-accent/40 [text-shadow:0_0_12px_hsl(var(--accent)/0.8)]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/10 border border-transparent"
                 }`}
               >
-                <span className="text-xl leading-none">{tab.icon}</span>
-                <span className="text-[10px] hidden sm:block">{tab.label}</span>
+                <span className="relative text-xl leading-none">
+                  {tab.icon}
+                  {tab.to === "/friends" && friendCount > 0 && (
+                    <span className="absolute -top-2 -right-3 min-w-4 h-4 px-1 rounded-full bg-accent text-accent-foreground text-[9px] inline-flex items-center justify-center">
+                      {friendCount}
+                    </span>
+                  )}
+                </span>
+                <span className="text-[10px]">{tab.label}</span>
               </NavLink>
             );
           })}

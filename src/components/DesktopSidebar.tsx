@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useFriendNotifications } from "@/hooks/useFriendNotifications";
 
 interface DesktopSidebarProps {
   onOpenPost: () => void;
@@ -12,6 +13,8 @@ export default function DesktopSidebar({ onOpenPost }: DesktopSidebarProps) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
+  const { data: friendNotifications } = useFriendNotifications();
+  const friendCount = friendNotifications?.count ?? 0;
 
   return (
     <aside className="hidden md:flex md:w-72 lg:w-80 shrink-0 border-r border-border/40 p-6 sticky top-0 h-screen z-20 backdrop-blur-sm">
@@ -41,22 +44,47 @@ export default function DesktopSidebar({ onOpenPost }: DesktopSidebarProps) {
           <NavLink
             to="/feed"
             className={({ isActive }) =>
-              `block rounded-lg px-3 py-2 text-sm transition-colors ${
-                isActive ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              `block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                isActive ? "bg-gradient-to-r from-primary/30 to-accent/20 text-foreground border border-primary/30" : "text-muted-foreground hover:text-foreground hover:bg-white/10 border border-transparent"
               }`
             }
           >
-            Sky Feed
+            🌌 Firmament
           </NavLink>
           <NavLink
-            to="/match"
+            to="/friends"
             className={({ isActive }) =>
-              `block rounded-lg px-3 py-2 text-sm transition-colors ${
-                isActive ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              `flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                isActive ? "bg-gradient-to-r from-primary/30 to-accent/20 text-foreground border border-primary/30" : "text-muted-foreground hover:text-foreground hover:bg-white/10 border border-transparent"
               }`
             }
           >
-            Match
+            ✨ Starseeds
+            {friendCount > 0 && (
+              <span className="ml-2 min-w-5 h-5 px-1 rounded-full bg-accent text-accent-foreground text-[10px] inline-flex items-center justify-center">
+                {friendCount}
+              </span>
+            )}
+          </NavLink>
+          <NavLink
+            to="/bazaar"
+            className={({ isActive }) =>
+              `block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                isActive ? "bg-gradient-to-r from-primary/30 to-accent/20 text-foreground border border-primary/30" : "text-muted-foreground hover:text-foreground hover:bg-white/10 border border-transparent"
+              }`
+            }
+          >
+            🧿 Bazaar
+          </NavLink>
+          <NavLink
+            to="/live"
+            className={({ isActive }) =>
+              `block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                isActive ? "bg-gradient-to-r from-primary/30 to-accent/20 text-foreground border border-primary/30" : "text-muted-foreground hover:text-foreground hover:bg-white/10 border border-transparent"
+              }`
+            }
+          >
+            📹 The Eleventh House
           </NavLink>
         </nav>
 

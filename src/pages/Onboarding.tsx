@@ -21,6 +21,7 @@ export default function Onboarding() {
   const handleSubmit = async (data: BirthData) => {
     const success = await updateProfile({
       display_name: data.name,
+      gender: data.gender && data.gender !== "" ? data.gender : null,
       birth_date: data.birthDate,
       birth_time: data.timeUnknown ? null : data.birthTime,
       birth_location: data.location,

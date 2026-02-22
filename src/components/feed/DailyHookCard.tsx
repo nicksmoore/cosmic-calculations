@@ -91,6 +91,19 @@ export default function DailyHookCard() {
     || forecast?.summary?.trim()
     || fallbackEnergyParagraph;
 
+  const cleanedEnergyParagraph = (() => {
+    const raw = energyParagraph.trim();
+    const sentences = raw.split(/(?<=[.!?])\s+/).filter(Boolean);
+    if (sentences.length < 2) return raw;
+
+    const opener = sentences[0].toLowerCase();
+    const looksLikeTransitList =
+      /(conjunct|conjunction|opposition|trine|square|sextile|quincunx|transit|aspects?)/.test(opener) &&
+      (opener.includes(",") || opener.includes(" and ") || opener.startsWith("today"));
+
+    return looksLikeTransitList ? sentences.slice(1).join(" ") : raw;
+  })();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
@@ -98,12 +111,12 @@ export default function DailyHookCard() {
       className="relative rounded-xl overflow-hidden mb-6"
       style={{
         background: "linear-gradient(135deg, #1a0533 0%, #12063d 40%, #1c0a4a 100%)",
-        boxShadow: "0 0 24px rgba(168, 85, 247, 0.35)",
+        boxShadow: "0 0 20px rgba(168, 85, 247, 0.3)",
       }}
       aria-label="Today's full collective forecast"
     >
       <div className="p-5 sm:p-6">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between gap-2 mb-1">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-yellow-300" />
             <span className="text-yellow-300 text-xs uppercase tracking-widest font-medium">
@@ -121,7 +134,7 @@ export default function DailyHookCard() {
         </h2>
 
         <p className="text-purple-100 text-sm sm:text-base mt-2 leading-relaxed">
-          {energyParagraph}
+          {cleanedEnergyParagraph}
         </p>
 
         {forecast?.details?.length ? (

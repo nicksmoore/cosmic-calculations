@@ -22,19 +22,19 @@ export const PLANET_SYMBOLS: Record<string, string> = {
 };
 
 // Zodiac signs with symbols
-export const ZODIAC_SIGNS: Record<string, { symbol: string; name: string }> = {
-  Aries: { symbol: "♈", name: "Aries" },
-  Taurus: { symbol: "♉", name: "Taurus" },
-  Gemini: { symbol: "♊", name: "Gemini" },
-  Cancer: { symbol: "♋", name: "Cancer" },
-  Leo: { symbol: "♌", name: "Leo" },
-  Virgo: { symbol: "♍", name: "Virgo" },
-  Libra: { symbol: "♎", name: "Libra" },
-  Scorpio: { symbol: "♏", name: "Scorpio" },
-  Sagittarius: { symbol: "♐", name: "Sagittarius" },
-  Capricorn: { symbol: "♑", name: "Capricorn" },
-  Aquarius: { symbol: "♒", name: "Aquarius" },
-  Pisces: { symbol: "♓", name: "Pisces" },
+export const ZODIAC_SIGNS: Record<string, { symbol: string; name: string; element: string; modality: string; polarity: string }> = {
+  Aries: { symbol: "♈", name: "Aries", element: "Fire", modality: "Cardinal", polarity: "Masculine" },
+  Taurus: { symbol: "♉", name: "Taurus", element: "Earth", modality: "Fixed", polarity: "Feminine" },
+  Gemini: { symbol: "♊", name: "Gemini", element: "Air", modality: "Mutable", polarity: "Masculine" },
+  Cancer: { symbol: "♋", name: "Cancer", element: "Water", modality: "Cardinal", polarity: "Feminine" },
+  Leo: { symbol: "♌", name: "Leo", element: "Fire", modality: "Fixed", polarity: "Masculine" },
+  Virgo: { symbol: "♍", name: "Virgo", element: "Earth", modality: "Mutable", polarity: "Feminine" },
+  Libra: { symbol: "♎", name: "Libra", element: "Air", modality: "Cardinal", polarity: "Masculine" },
+  Scorpio: { symbol: "♏", name: "Scorpio", element: "Water", modality: "Fixed", polarity: "Feminine" },
+  Sagittarius: { symbol: "♐", name: "Sagittarius", element: "Fire", modality: "Mutable", polarity: "Masculine" },
+  Capricorn: { symbol: "♑", name: "Capricorn", element: "Earth", modality: "Cardinal", polarity: "Feminine" },
+  Aquarius: { symbol: "♒", name: "Aquarius", element: "Air", modality: "Fixed", polarity: "Masculine" },
+  Pisces: { symbol: "♓", name: "Pisces", element: "Water", modality: "Mutable", polarity: "Feminine" },
 };
 
 // Aspect types for transits

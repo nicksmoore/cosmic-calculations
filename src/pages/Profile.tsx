@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Drawer,
   DrawerContent,
@@ -21,17 +22,17 @@ import DailyHookCard from "@/components/feed/DailyHookCard";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useEphemeris } from "@/hooks/useEphemeris";
-import { useDailyTransits } from "@/hooks/useDailyTransits";
-import { fetchCurrentVibeCopy, useHouseDescriptions } from "@/hooks/useAstroCopy";
+import { useHouseDescriptions } from "@/hooks/useAstroCopy";
 import NatalChartWheel from "@/components/NatalChartWheel";
 import PlanetDetails from "@/components/PlanetDetails";
 import HouseDetails from "@/components/HouseDetails";
 import AllHousesGuide from "@/components/AllHousesGuide";
-import { Planet, House } from "@/data/natalChartData";
+import AstroFlashcards from "@/components/AstroFlashcards";
+import AstrologyHistory from "@/components/AstrologyHistory";
+import { Planet, House, zodiacSigns } from "@/data/natalChartData";
 import { BirthData } from "@/components/intake/BirthDataForm";
 import { timezoneFromLongitude } from "@/lib/timezone";
-import ZodiacSystemSelector, { ZodiacSystem } from "@/components/ZodiacSystemSelector";
-import { generateCurrentVibe } from "@/lib/currentVibe";
+import { ZodiacSystem } from "@/components/ZodiacSystemSelector";
 
 // --- Constants ---
 
@@ -58,23 +59,39 @@ const ASTEROID_POINTS = [
   "Chiron",
 ] as const;
 
+const SIGN_MODALITIES = Object.fromEntries(
+  zodiacSigns.map((s) => [s.name, s.modality])
+) as Record<string, string>;
+
+const SIGN_ELEMENTS = Object.fromEntries(
+  zodiacSigns.map((s) => [s.name, s.element])
+) as Record<string, string>;
+
 // --- Trinity Widget ---
 
 function TrinityCard({
-  label, sign, description,
-}: { label: string; sign: string | null; description: string }) {
+  label, sign, description, onOpenMeaning,
+}: {
+  label: string;
+  sign: string | null;
+  description: string;
+  onOpenMeaning: (label: string, sign: string) => void;
+}) {
   const symbol = sign ? SIGN_SYMBOLS[sign] ?? "?" : "?";
   const color  = sign ? SIGN_COLORS[sign] ?? "text-foreground" : "text-muted-foreground";
 
   return (
     <div className="flex flex-col items-center gap-1.5">
-      <div
+      <button
+        onClick={() => sign && onOpenMeaning(label, sign)}
+        aria-label={sign ? `${label} in ${sign} meaning` : `${label} unavailable`}
+        disabled={!sign}
         className={`w-16 h-16 rounded-full glass-panel flex items-center justify-center ${
-          sign ? "animate-[pulse-ring_3s_ease-in-out_infinite]" : "opacity-50"
+          sign ? "animate-[pulse-ring_3s_ease-in-out_infinite] hover:ring-2 hover:ring-primary/40 transition-all" : "opacity-50"
         }`}
       >
         <span className={`text-2xl ${color}`}>{symbol}</span>
-      </div>
+      </button>
       <div className="flex items-center gap-1">
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</p>
         <Popover>
@@ -89,7 +106,14 @@ function TrinityCard({
         </Popover>
       </div>
       <p className="text-sm font-serif font-bold uppercase tracking-wide text-foreground">
-        {sign ?? "—"}
+        {sign ? (
+          <button
+            onClick={() => onOpenMeaning(label, sign)}
+            className="hover:text-primary transition-colors"
+          >
+            {sign}
+          </button>
+        ) : "—"}
       </p>
     </div>
   );
@@ -107,7 +131,6 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({
     display_name:   "",
-    current_status: "",
     is_public:      true,
   });
   const [selectedPlanet, setSelectedPlanet] = useState<Planet | null>(null);
@@ -115,8 +138,7 @@ const ProfilePage = () => {
   const [drawerOpen,     setDrawerOpen]     = useState(false);
   const [houseSystem, setHouseSystem] = useState<HouseSystem>("placidus");
   const [zodiacSystem, setZodiacSystem] = useState<ZodiacSystem>("tropical");
-  const [autoVibeStamp, setAutoVibeStamp] = useState<string | null>(null);
-  const lastAutoDateRef = useRef<string | null>(null);
+  const lastBigThreeSyncRef = useRef<string | null>(null);
 
   const birthData: BirthData | null =
     profile?.birth_date && profile?.birth_lat && profile?.birth_lng
@@ -133,7 +155,6 @@ const ProfilePage = () => {
       : null;
 
   const { chartData } = useEphemeris(birthData, houseSystem, zodiacSystem);
-  const { data: dailyTransits } = useDailyTransits();
   const { data: houseDescriptions, isLoading: houseDescriptionsLoading } = useHouseDescriptions(chartData);
 
   const outerPlanets = chartData?.planets.filter((p) =>
@@ -142,6 +163,8 @@ const ProfilePage = () => {
   const displayedSunSign = chartData?.planets.find((p) => p.name === "Sun")?.sign ?? profile?.sun_sign ?? null;
   const displayedMoonSign = chartData?.planets.find((p) => p.name === "Moon")?.sign ?? profile?.moon_sign ?? null;
   const displayedRisingSign = chartData?.angles.ascendant.sign ?? profile?.rising_sign ?? null;
+  const sunModality = displayedSunSign ? SIGN_MODALITIES[displayedSunSign] : null;
+  const sunElement = displayedSunSign ? SIGN_ELEMENTS[displayedSunSign] : null;
   const asteroidPoints = ASTEROID_POINTS.map((name) => ({
     name,
     planet: chartData?.planets.find((p) => p.name === name),
@@ -151,6 +174,8 @@ const ProfilePage = () => {
   useEffect(() => {
     if (!chartData || !profile) return;
     if (zodiacSystem !== "tropical" || houseSystem !== "placidus") return;
+    const today = new Date().toISOString().slice(0, 10);
+    if (lastBigThreeSyncRef.current === today) return;
     const sun    = chartData.planets.find(p => p.name === "Sun")?.sign ?? null;
     const moon   = chartData.planets.find(p => p.name === "Moon")?.sign ?? null;
     const rising = chartData.angles.ascendant.sign ?? null;
@@ -161,57 +186,27 @@ const ProfilePage = () => {
 
     if (sun && moon && rising && changed) {
       updateProfile({ sun_sign: sun, moon_sign: moon, rising_sign: rising });
+      lastBigThreeSyncRef.current = today;
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartData, profile?.sun_sign, profile?.moon_sign, profile?.rising_sign, zodiacSystem, houseSystem]);
 
   useEffect(() => {
-    if (!chartData || !dailyTransits || !profile || isEditing) return;
-
-    const today = new Date().toISOString().slice(0, 10);
-    if (lastAutoDateRef.current === today) return;
-
-    const statusDate = profile.status_updated_at?.slice(0, 10) ?? null;
-    const shouldGenerate = !profile.current_status || statusDate !== today;
-    if (!shouldGenerate) return;
-
-    let cancelled = false;
-    (async () => {
-      const generated = (await fetchCurrentVibeCopy(chartData, dailyTransits))
-        || generateCurrentVibe(chartData, dailyTransits);
-      if (cancelled) return;
-      lastAutoDateRef.current = today;
-      setAutoVibeStamp(today);
-      await updateProfile({
-        current_status: generated,
-        status_updated_at: new Date().toISOString(),
-      });
-    })();
-    return () => {
-      cancelled = true;
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartData, dailyTransits, profile?.current_status, profile?.status_updated_at, isEditing]);
-
-  useEffect(() => {
     if (profile) {
       setForm({
         display_name:   profile.display_name   ?? "",
-        current_status: profile.current_status  ?? "",
-        is_public:      profile.is_public,
+        is_public:      profile.is_public ?? true,
       });
     }
   }, [profile]);
 
   const handleSave = async () => {
-    const success = await updateProfile({
-      ...form,
-      status_updated_at:
-        form.current_status !== (profile?.current_status ?? "")
-          ? new Date().toISOString()
-          : profile?.status_updated_at ?? null,
-    });
+    const success = await updateProfile({ ...form });
     if (success) setIsEditing(false);
+  };
+
+  const openMeaning = (placement: string, sign: string) => {
+    navigate(`/meaning?sign=${encodeURIComponent(sign)}&label=${encodeURIComponent(`${placement} in ${sign}`)}`);
   };
 
   const handleSelectPlanet = (planet: Planet | null) => {
@@ -227,9 +222,7 @@ const ProfilePage = () => {
   };
 
   if (isLoading) {
-    return (
-      <CosmicLoaderPage />
-    );
+    return <CosmicLoaderPage />;
   }
 
   return (
@@ -239,9 +232,8 @@ const ProfilePage = () => {
 
         {/* ── Zone 1: Identity Header ── */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-          {/* Avatar with spinning conic-gradient ring */}
+          {/* Avatar with conic gradient ring */}
           <div className="relative w-24 h-24 mx-auto mb-4">
-            {/* Rotating conic ring */}
             <div
               className="absolute inset-[-3px] rounded-full z-0"
               style={{
@@ -249,9 +241,7 @@ const ProfilePage = () => {
                 animation: "orbit 5s linear infinite",
               }}
             />
-            {/* Dark gap between ring and avatar */}
             <div className="absolute inset-[2px] rounded-full bg-background z-10" />
-            {/* Avatar */}
             <Avatar className="h-full w-full relative z-20">
               <AvatarImage src={user?.user_metadata?.avatar_url || user?.user_metadata?.picture} />
               <AvatarFallback className="bg-primary/20 text-primary text-2xl font-serif">
@@ -300,17 +290,24 @@ const ProfilePage = () => {
             <TrinityCard
               label="Sun"
               sign={displayedSunSign}
-              description="Sun represents your core identity, vitality, and life direction."
+              description={
+                displayedSunSign && sunModality && sunElement
+                  ? `Sun represents your core identity, vitality, and life direction. ${displayedSunSign} is a ${sunElement} sign with ${sunModality.toLowerCase()} modality.`
+                  : "Sun represents your core identity, vitality, and life direction."
+              }
+              onOpenMeaning={openMeaning}
             />
             <TrinityCard
               label="Moon"
               sign={displayedMoonSign}
               description="Moon reflects emotional needs, instinctive responses, and inner security."
+              onOpenMeaning={openMeaning}
             />
             <TrinityCard
               label="Rising"
               sign={displayedRisingSign}
               description="Rising sign shows your outward style, first impressions, and approach to life."
+              onOpenMeaning={openMeaning}
             />
           </div>
 
@@ -333,14 +330,15 @@ const ProfilePage = () => {
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {outerPlanets.map((planet) => (
-                  <span
+                  <button
                     key={planet.name}
-                    className="flex items-center gap-1.5 text-xs bg-white/5 border border-border/30 rounded-full px-3 py-1.5"
+                    className="flex items-center gap-1.5 text-xs bg-white/5 border border-border/30 rounded-full px-3 py-1.5 hover:border-primary/40 transition-colors"
+                    onClick={() => openMeaning(planet.name, planet.sign)}
                   >
                     <span>{planet.symbol}</span>
                     <span className="text-muted-foreground">{planet.name}</span>
                     <span className={SIGN_COLORS[planet.sign] ?? "text-foreground"}>{planet.sign}</span>
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -365,45 +363,22 @@ const ProfilePage = () => {
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {asteroidPoints.map(({ name, planet }) => (
-                  <span
+                  <button
                     key={name}
-                    className="flex items-center gap-1.5 text-xs border rounded-full px-3 py-1.5 bg-white/5 border-border/30"
+                    className="flex items-center gap-1.5 text-xs border rounded-full px-3 py-1.5 bg-white/5 border-border/30 hover:border-primary/40 transition-colors"
+                    onClick={() => planet?.sign && openMeaning(name, planet.sign)}
+                    disabled={!planet?.sign}
                   >
                     <span>{planet?.symbol ?? "•"}</span>
                     <span className="text-muted-foreground">{name}</span>
                     <span className={planet ? (SIGN_COLORS[planet.sign] ?? "text-foreground") : "text-muted-foreground"}>
                       {planet?.sign ?? ""}
                     </span>
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>
           )}
-
-          {/* Current Vibe */}
-          <div className="glass-panel rounded-xl p-3 text-center mb-6">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <Sparkles className="h-3 w-3 text-accent" />
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Current Vibe</span>
-            </div>
-            {isEditing ? (
-              <Input
-                value={form.current_status}
-                onChange={e => setForm(f => ({ ...f, current_status: e.target.value }))}
-                placeholder='e.g., "Surviving my Saturn Return"'
-                className="text-center bg-input/50 border-border/50 text-sm"
-              />
-            ) : (
-              <p className="text-lg sm:text-xl font-serif text-foreground leading-relaxed">
-                {form.current_status || "No status set..."}
-              </p>
-            )}
-            {autoVibeStamp && (
-              <p className="text-[10px] text-muted-foreground mt-2">
-                Auto-generated from natal + today's transits
-              </p>
-            )}
-          </div>
 
           {/* Edit / Save button */}
           <div className="flex items-center justify-center gap-2">
@@ -427,47 +402,98 @@ const ProfilePage = () => {
           </div>
         </motion.div>
 
-        {/* Daily transits on profile for quick context */}
-        <DailyHookCard />
+        <Tabs defaultValue="chart" className="w-full">
+          <div className="flex justify-center mb-4">
+            <TabsList className="glass-panel border border-border/30 p-1.5 gap-1">
+              <TabsTrigger
+                value="chart"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent/30 data-[state=active]:to-primary/25 data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_22px_hsl(var(--accent)/0.45)]"
+              >
+                Chart
+              </TabsTrigger>
+              <TabsTrigger
+                value="learn"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent/30 data-[state=active]:to-primary/25 data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_22px_hsl(var(--accent)/0.45)]"
+              >
+                Learn
+              </TabsTrigger>
+              <TabsTrigger
+                value="history"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent/30 data-[state=active]:to-primary/25 data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_22px_hsl(var(--accent)/0.45)]"
+              >
+                History
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-        {/* ── Zone 2: The Living Chart ── */}
-        {birthData && chartData ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
-            <ZodiacSystemSelector value={zodiacSystem} onChange={setZodiacSystem} />
+          <TabsContent value="chart">
+            {/* Daily transits on profile for quick context */}
+            <DailyHookCard />
 
-            <div className="glass-panel rounded-xl p-3 mb-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider text-center mb-2">House System</p>
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                {([
-                  { id: "placidus", label: "Placidus" },
-                  { id: "whole-sign", label: "Whole Sign" },
-                  { id: "equal", label: "Equal" },
-                ] as const).map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => setHouseSystem(option.id)}
-                    className={`px-3 py-1.5 rounded-md text-xs transition-colors ${
-                      houseSystem === option.id
-                        ? "bg-accent text-accent-foreground"
-                        : "bg-secondary/50 text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+            {/* ── Zone 2: The Living Chart ── */}
+            {birthData && chartData ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
+            <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] items-start">
+              <div className="glass-panel rounded-xl p-4 space-y-4 lg:sticky lg:top-6">
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Zodiac System</p>
+                  <div className="flex flex-wrap gap-2">
+                    {([
+                      { id: "tropical", label: "Western" },
+                      { id: "sidereal", label: "Vedic" },
+                    ] as const).map((option) => (
+                      <button
+                        key={option.id}
+                        onClick={() => setZodiacSystem(option.id)}
+                        className={`px-3 py-1.5 rounded-md text-xs transition-colors ${
+                          zodiacSystem === option.id
+                            ? "bg-accent text-accent-foreground"
+                            : "bg-secondary/50 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">House System</p>
+                  <div className="flex flex-wrap gap-2">
+                    {([
+                      { id: "placidus", label: "Placidus" },
+                      { id: "whole-sign", label: "Whole Sign" },
+                      { id: "equal", label: "Equal" },
+                    ] as const).map((option) => (
+                      <button
+                        key={option.id}
+                        onClick={() => setHouseSystem(option.id)}
+                        className={`px-3 py-1.5 rounded-md text-xs transition-colors ${
+                          houseSystem === option.id
+                            ? "bg-accent text-accent-foreground"
+                            : "bg-secondary/50 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Current: {zodiacSystem === "tropical" ? "Western" : "Vedic"} +{" "}
+                  {houseSystem === "placidus" ? "Placidus" : houseSystem === "whole-sign" ? "Whole Sign" : "Equal"}.
+                </p>
               </div>
+              <NatalChartWheel
+                onSelectPlanet={handleSelectPlanet}
+                onSelectHouse={handleSelectHouse}
+                selectedPlanet={selectedPlanet}
+                selectedHouse={selectedHouse}
+                houseSystem={houseSystem}
+                chartData={chartData}
+                partnerChartData={null}
+                partnerName={undefined}
+              />
             </div>
-
-            <NatalChartWheel
-              onSelectPlanet={handleSelectPlanet}
-              onSelectHouse={handleSelectHouse}
-              selectedPlanet={selectedPlanet}
-              selectedHouse={selectedHouse}
-              houseSystem={houseSystem}
-              chartData={chartData}
-              partnerChartData={null}
-              partnerName={undefined}
-            />
 
             <div className="glass-panel rounded-xl p-4 sm:p-6 mt-6">
               <h3 className="font-serif text-lg text-foreground mb-4">House-by-House Interpretation</h3>
@@ -478,36 +504,32 @@ const ProfilePage = () => {
                 loadingDescriptions={houseDescriptionsLoading}
               />
             </div>
+              </motion.div>
+            ) : profile && !profile.sun_sign ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-8 glass-panel p-4 rounded-xl text-center cosmic-border"
+              >
+                <p className="text-sm text-muted-foreground">
+                  🌟 Your Big Three aren't set yet! Generate your natal chart to populate them.
+                </p>
+                <Button variant="outline" size="sm" className="mt-3 gap-2" onClick={() => navigate("/")}>
+                  <Sparkles className="h-4 w-4" />
+                  Generate My Chart
+                </Button>
+              </motion.div>
+            ) : null}
+          </TabsContent>
 
-            <div className="glass-panel rounded-xl p-4 sm:p-6 mt-6 space-y-4">
-              <h3 className="font-serif text-lg text-foreground">Natal Astrology Framework</h3>
-              <p className="text-sm text-muted-foreground">
-                Natal astrology interprets your birth chart as a sky snapshot from your exact birth time, date, and place, revealing personality, strengths, challenges, and life potential.
-              </p>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p><span className="text-foreground font-medium">Core components:</span> Celestial bodies and points; zodiac signs; houses; aspects; and chart angles (Ascendant, Descendant, Midheaven, Imum Coeli).</p>
-                <p><span className="text-foreground font-medium">Sign structure:</span> Elements (Fire, Earth, Air, Water), modalities (Cardinal, Fixed, Mutable), and polarities (Masculine/Feminine).</p>
-                <p><span className="text-foreground font-medium">House grouping:</span> Angular houses (1, 4, 7, 10), succedent houses (2, 5, 8, 11), and cadent houses (3, 6, 9, 12).</p>
-                <p><span className="text-foreground font-medium">Interpretive lenses:</span> Traditional, modern/psychological, and evolutionary astrology.</p>
-                <p><span className="text-foreground font-medium">Extensions:</span> Progressions, transits, solar/lunar returns, and synastry/composite techniques.</p>
-              </div>
-            </div>
-          </motion.div>
-        ) : profile && !profile.sun_sign ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 glass-panel p-4 rounded-xl text-center cosmic-border"
-          >
-            <p className="text-sm text-muted-foreground">
-              🌟 Your Big Three aren't set yet! Generate your natal chart to populate them.
-            </p>
-            <Button variant="outline" size="sm" className="mt-3 gap-2" onClick={() => navigate("/")}>
-              <Sparkles className="h-4 w-4" />
-              Generate My Chart
-            </Button>
-          </motion.div>
-        ) : null}
+          <TabsContent value="learn">
+            <AstroFlashcards />
+          </TabsContent>
+
+          <TabsContent value="history">
+            <AstrologyHistory />
+          </TabsContent>
+        </Tabs>
 
       </main>
 

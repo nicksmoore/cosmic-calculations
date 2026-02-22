@@ -96,15 +96,19 @@ export default function Feed() {
     <div className="min-h-screen bg-background text-foreground">
       <StarField />
       <main className="mx-auto w-full max-w-6xl px-4 pt-6 pb-28 md:px-8 md:pb-10 relative z-10">
-        {/* Sky Header */}
-        {chartData && (
-          <div className="mb-4">
-            <TodaysPlanetaryBar chartData={chartData} />
-          </div>
-        )}
+        <section className="bento-grid mb-4">
+          {/* Sky Header */}
+          {chartData && (
+            <div className="bento-tile col-span-12 p-3">
+              <TodaysPlanetaryBar chartData={chartData} />
+            </div>
+          )}
 
-        {/* Sticky Daily Hook */}
-        <DailyHookCard />
+          {/* Sticky Daily Hook */}
+          <div className="col-span-12">
+            <DailyHookCard />
+          </div>
+        </section>
 
         {/* Feed */}
         <FeedList />
