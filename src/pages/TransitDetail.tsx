@@ -13,6 +13,7 @@ import {
   getTransitInterpretation,
   PLANET_ARCHETYPES,
 } from "@/lib/astrocartography/interpretations";
+import { formatTransitDuration } from "@/lib/formatTransitDuration";
 
 interface TransitDetailState {
   planet: TransitPlanet;
@@ -71,6 +72,9 @@ const AspectCard = ({ aspect }: { aspect: TransitAspect }) => {
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
               {aspect.transitPlanet} in {aspect.transitSign} {aspect.aspectType} your natal {aspect.natalPlanet} • {aspect.orb.toFixed(1)}° orb
+              {aspect.durationDays != null && (
+                <> • <span className="text-muted-foreground/60">{formatTransitDuration(aspect.durationDays)} window</span></>
+              )}
             </p>
           </div>
           <IntensityBadge intensity={interpretation.intensity} />
