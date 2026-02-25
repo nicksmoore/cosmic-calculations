@@ -483,3 +483,20 @@
     border-radius: var(--radius);
   }
 }
+
+/* ── Tier-3 Cosmic Fallback (CSS-only ambient glow) ─────────────── */
+.cosmic-bg-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 30%, hsl(275 80% 20% / 0.35) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 80% at 80% 70%, hsl(275 60% 15% / 0.25) 0%, transparent 70%);
+  animation: cosmicPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes cosmicPulse {
+  from { opacity: 0.6; }
+  to   { opacity: 1; }
+}
