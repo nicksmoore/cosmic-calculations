@@ -157,18 +157,45 @@ const ProfilePage = () => {
   const { chartData } = useEphemeris(birthData, houseSystem, zodiacSystem);
   const { data: houseDescriptions, isLoading: houseDescriptionsLoading } = useHouseDescriptions(chartData);
 
-  const outerPlanets = chartData?.planets.filter((p) =>
-    ["Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"].includes(p.name)
-  ) ?? [];
-  const displayedSunSign = chartData?.planets.find((p) => p.name === "Sun")?.sign ?? profile?.sun_sign ?? null;
-  const displayedMoonSign = chartData?.planets.find((p) => p.name === "Moon")?.sign ?? profile?.moon_sign ?? null;
-  const displayedRisingSign = chartData?.angles.ascendant.sign ?? profile?.rising_sign ?? null;
-  const sunModality = displayedSunSign ? SIGN_MODALITIES[displayedSunSign] : null;
-  const sunElement = displayedSunSign ? SIGN_ELEMENTS[displayedSunSign] : null;
-  const asteroidPoints = ASTEROID_POINTS.map((name) => ({
-    name,
-    planet: chartData?.planets.find((p) => p.name === name),
-  })).filter((item) => Boolean(item.planet));
+  const outerPlanets = useMemo(
+    () => chartData?.planets.filter((p) =>
+      ["Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"].includes(p.name)
+    ) ?? [],
+    [chartData]
+  );
+
+  const displayedSunSign = useMemo(
+    () => chartData?.planets.find((p) => p.name === "Sun")?.sign ?? profile?.sun_sign ?? null,
+    [chartData, profile?.sun_sign]
+  );
+
+  const displayedMoonSign = useMemo(
+    () => chartData?.planets.find((p) => p.name === "Moon")?.sign ?? profile?.moon_sign ?? null,
+    [chartData, profile?.moon_sign]
+  );
+
+  const displayedRisingSign = useMemo(
+    () => chartData?.angles.ascendant.sign ?? profile?.rising_sign ?? null,
+    [chartData, profile?.rising_sign]
+  );
+
+  const sunModality = useMemo(
+    () => displayedSunSign ? SIGN_MODALITIES[displayedSunSign] : null,
+    [displayedSunSign]
+  );
+
+  const sunElement = useMemo(
+    () => displayedSunSign ? SIGN_ELEMENTS[displayedSunSign] : null,
+    [displayedSunSign]
+  );
+
+  const asteroidPoints = useMemo(
+    () => ASTEROID_POINTS.map((name) => ({
+      name,
+      planet: chartData?.planets.find((p) => p.name === name),
+    })).filter((item) => Boolean(item.planet)),
+    [chartData]
+  );
 
   // Keep profile Big Three in sync with current chart computation.
   useEffect(() => {

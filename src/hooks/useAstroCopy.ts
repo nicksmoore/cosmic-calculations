@@ -115,8 +115,10 @@ export function useSignExplanation(sign: string | null, placementLabel: string, 
   return useQuery<string | null>({
     queryKey: ["astro-copy-sign-v2", sign, placementLabel],
     enabled: !!sign && enabled,
-    staleTime: 30 * 24 * 60 * 60 * 1000,
-    retry: 2,
+    // Increase stale time to 7 days + enable stale-while-revalidate pattern
+    staleTime: 7 * 24 * 60 * 60 * 1000,
+    gcTime: 30 * 24 * 60 * 60 * 1000, // Keep in cache for 30 days
+    retry: 1, // Reduce retry count to improve perceived performance
     queryFn: async () => {
       if (!sign) return null;
       const { data, error } = await supabase.functions.invoke("astro-copy", {
