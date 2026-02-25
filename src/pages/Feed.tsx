@@ -2,6 +2,7 @@ import { useRef, useCallback } from "react";
 import { CosmicLoader } from "@/components/ui/CosmicLoader";
 import TodaysPlanetaryBar from "@/components/TodaysPlanetaryBar";
 import DailyHookCard from "@/components/feed/DailyHookCard";
+import UpcomingCosmicEvents from "@/components/UpcomingCosmicEvents";
 import PostCard from "@/components/feed/PostCard";
 import StarField from "@/components/StarField";
 import { useFeed } from "@/hooks/useFeed";
@@ -107,6 +108,10 @@ export default function Feed() {
           {/* Sticky Daily Hook */}
           <div className="col-span-12">
             <DailyHookCard />
+          </div>
+
+          <div className="col-span-12">
+            <UpcomingCosmicEvents />
           </div>
         </section>
 
