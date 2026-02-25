@@ -1,6 +1,8 @@
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
 import { NatalChartData } from "@/data/natalChartData";
 import {
   getMostSignificantTransit,
@@ -119,6 +121,18 @@ const PlanetChip = ({ planet, natalPlanets, onClick, center = false }: PlanetChi
 
 const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    if (!containerRef.current) return;
+    gsap.from(containerRef.current, {
+      opacity: 0,
+      y: -16,
+      duration: 0.8,
+      ease: "power3.out",
+      delay: 0.1,
+    });
+  }, { scope: containerRef });
 
   const natalPlanets = useMemo(() => {
     return chartData.planets.map((p) => ({
@@ -174,8 +188,7 @@ const TodaysPlanetaryBar = ({ chartData }: TodaysPlanetaryBarProps) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
+      ref={containerRef}
       className={`w-full border rounded-2xl backdrop-blur-xl mb-8 overflow-hidden ${
         mercuryIsRetrograde
           ? "bg-gradient-to-br from-amber-500/15 via-background/70 to-background/85 border-amber-500/30"
