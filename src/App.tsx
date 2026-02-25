@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Outlet, NavLink, Navigate } from "react-r
 import { ClerkProvider } from "@clerk/clerk-react";
 import AuthGuard from "@/components/AuthGuard";
 import GlobalLayout from "@/components/layout/GlobalLayout";
+import { AdaptivePerformanceProvider } from "@/components/canvas/AdaptivePerformance";
 import BottomNav from "@/components/BottomNav";
 import PostComposerSheet from "@/components/PostComposerSheet";
 import DesktopSidebar from "@/components/DesktopSidebar";
@@ -146,6 +147,7 @@ function AuthedLayout() {
 }
 
 const App = () => (
+  <AdaptivePerformanceProvider>
   <ClerkProvider
     publishableKey={clerkKey}
     signInForceRedirectUrl="/feed"
@@ -194,6 +196,7 @@ const App = () => (
       </TooltipProvider>
     </QueryClientProvider>
   </ClerkProvider>
+  </AdaptivePerformanceProvider>
 );
 
 export default App;
