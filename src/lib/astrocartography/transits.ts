@@ -50,6 +50,7 @@ export interface TransitAspect {
   orb: number;
   isExact: boolean;
   isBenefic: boolean;
+  durationDays: number | null;
 }
 
 export interface TransitPlanet {
@@ -87,6 +88,24 @@ const ASPECT_ORBS: Record<TransitAspectType, number> = {
   square: 6,
   sextile: 4,
 };
+
+// Approximate daily motion in degrees for each planet
+const APPROX_DAILY_MOTION: Record<string, number> = {
+  Sun: 1.0, Moon: 13.0, Mercury: 1.2, Venus: 1.2,
+  Mars: 0.52, Jupiter: 0.083, Saturn: 0.033,
+  Uranus: 0.012, Neptune: 0.006, Pluto: 0.004, Chiron: 0.05,
+};
+
+/** Exposed for testing. Total transit window in days (entry to exit). */
+export function computePersonalTransitDuration(
+  planet: string,
+  aspectType: TransitAspectType,
+): number | null {
+  const speed = APPROX_DAILY_MOTION[planet];
+  if (!speed) return null;
+  const orbLimit = ASPECT_ORBS[aspectType];
+  return (2 * orbLimit) / speed;
+}
 
 // Aspect angles
 const ASPECT_ANGLES: Record<TransitAspectType, number> = {
@@ -141,6 +160,7 @@ function findAspects(
           orb: diff,
           isExact: diff < 1,
           isBenefic: BENEFIC_ASPECTS.includes(aspectType as TransitAspectType),
+          durationDays: computePersonalTransitDuration(transitPos.name, aspectType as TransitAspectType),
         });
       }
     }
