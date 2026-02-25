@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Heart, MessageCircle, Loader2, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -217,6 +218,7 @@ export default function PostCard({ post, currentUserId, index = 0 }: PostCardPro
   const [showComments, setShowComments] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const { toast } = useToast();
+  const reveal = useScrollReveal({ delay: Math.min(index * 0.05, 0.3) });
 
   const handleLike = async () => {
     if (!user) return;
@@ -259,10 +261,8 @@ export default function PostCard({ post, currentUserId, index = 0 }: PostCardPro
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index * 0.07, 0.5), duration: 0.4, ease: "easeOut" }}
-      className={`glass-panel rounded-xl p-4 border-l-2 ${elementBorder}`}
+      {...reveal}
+      className={`glass-panel rounded-xl p-4 border-l-2 ${elementBorder} pointer-events-auto`}
     >
       <div className="flex items-start gap-3 mb-3">
         <button
