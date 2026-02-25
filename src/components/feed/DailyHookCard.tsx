@@ -4,6 +4,7 @@ import { Sparkles } from "lucide-react";
 import { useDailyTransits } from "@/hooks/useDailyTransits";
 import { useForecastCopy, useTransitEnergyCopy } from "@/hooks/useAstroCopy";
 import { getMoonPhase } from "@/lib/moonPhase";
+import { formatTransitDuration } from "@/lib/formatTransitDuration";
 
 function useCountdown(targetIso: string | null) {
   const [timeLeft, setTimeLeft] = useState("");
@@ -147,6 +148,26 @@ export default function DailyHookCard() {
             ))}
           </div>
         ) : null}
+
+        {data.transits?.length > 0 && (
+          <div className="mt-4 space-y-1.5">
+            <p className="text-xs uppercase tracking-widest text-purple-300/60 mb-2">Active Transits</p>
+            {data.transits.map((t) => {
+              const dur = formatTransitDuration(t.duration_days ?? null);
+              return (
+                <div
+                  key={t.transit_key}
+                  className="flex items-center justify-between text-xs text-purple-100/80"
+                >
+                  <span className="truncate pr-2">{t.display_name}</span>
+                  <span className="shrink-0 text-purple-300/60 font-mono">
+                    {dur ?? "—"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {data.aspect_precision && (
           <div className="mt-4">
