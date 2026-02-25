@@ -4,6 +4,7 @@ export function formatTransitDuration(days: number | null): string | null {
   if (days < 1) return "< 1 day";
   if (days < 7) {
     const d = Math.round(days);
+    if (d >= 7) return "~1 week";
     return `~${d} ${d === 1 ? "day" : "days"}`;
   }
   if (days < 30) {

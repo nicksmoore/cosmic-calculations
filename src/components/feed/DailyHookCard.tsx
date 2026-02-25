@@ -151,8 +151,11 @@ export default function DailyHookCard() {
 
         {data.transits?.length > 0 && (
           <div className="mt-4 space-y-1.5">
-            <p className="text-xs uppercase tracking-widest text-purple-300/60 mb-2">Active Transits</p>
-            {data.transits.map((t) => {
+            <div className="flex items-center justify-between text-xs text-purple-300/60 mb-2">
+              <span className="uppercase tracking-widest">Active Transits</span>
+              <span>remaining</span>
+            </div>
+            {data.transits.slice(0, 5).map((t) => {
               const dur = formatTransitDuration(t.duration_days ?? null);
               return (
                 <div

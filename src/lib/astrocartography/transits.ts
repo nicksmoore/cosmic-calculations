@@ -96,7 +96,11 @@ const APPROX_DAILY_MOTION: Record<string, number> = {
   Uranus: 0.012, Neptune: 0.006, Pluto: 0.004, Chiron: 0.05,
 };
 
-/** Exposed for testing. Total transit window in days (entry to exit). */
+/**
+ * Exposed for testing. Total transit window in days (entry to exit).
+ * Uses mean direct motion. Actual duration may be significantly longer
+ * for inner planets (Mercury, Venus, Mars) during retrograde periods.
+ */
 export function computePersonalTransitDuration(
   planet: string,
   aspectType: TransitAspectType,
