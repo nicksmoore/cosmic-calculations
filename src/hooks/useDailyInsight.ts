@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback, useMemo } from "react";
 import { NatalChartData } from "@/data/natalChartData";
 import { calculateTransits, TransitsData } from "@/lib/astrocartography/transits";

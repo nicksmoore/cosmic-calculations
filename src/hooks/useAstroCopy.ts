@@ -107,7 +107,7 @@ function cleanSignExplanation(raw: string, sign: string) {
   const text = raw.trim();
   const cleanedPrefix = text
     .replace(new RegExp(`^${sign}\\s+interpretation\\s*[:\\-]\\s*`, "i"), "")
-    .replace(/^interpretation\s*[:\-]\s*/i, "");
+    .replace(/^interpretation\s*[:-]\s*/i, "");
   return cleanedPrefix.trim();
 }
 

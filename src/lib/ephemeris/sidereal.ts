@@ -30,7 +30,7 @@ export function calculateGMST(jd: number): number {
   const T = (jd - J2000) / 36525.0;
 
   // IAU 1982 formula (Meeus eq. 12.4)
-  let gmst =
+  const gmst =
     280.46061837 +
     360.98564736629 * (jd - J2000) +
     0.000387933 * T * T -

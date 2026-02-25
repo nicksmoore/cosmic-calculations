@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from "@tanstack/react-query";
 import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { supabase } from "@/integrations/supabase/client";

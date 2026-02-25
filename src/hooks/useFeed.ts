@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { publicSupabase } from "@/integrations/supabase/publicClient";
 

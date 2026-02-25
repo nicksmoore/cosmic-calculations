@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings, Box, Circle, Globe, History } from "lucide-react";

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2, Search, Sparkles, UserCheck, UserPlus, Send, Users, Smile, Image as ImageIcon, Paperclip, Mic, MicOff, Film } from "lucide-react";

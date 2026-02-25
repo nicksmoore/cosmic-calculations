@@ -1,16 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { ShoppingBag, Search } from "lucide-react";
+import { ShoppingBag, Search, Flame, Mountain, Wind, Droplets, Trophy } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import StarField from "@/components/StarField";
 import { supabase } from "@/integrations/supabase/client";
+import { getAuthenticatedClient } from "@/integrations/supabase/authClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useAnimate } from "framer-motion";
 import BazaarTentScene from "@/components/bazaar/BazaarTentScene";
+import { deriveDominantElement, getWeekKey, type HouseElement } from "@/lib/elementalHouses";
 
 interface Listing {
   id: string;
@@ -35,6 +38,50 @@ const BAZAAR_CATEGORIES = [
   { name: "The Trading Post", desc: "Member-to-member swaps and used goods." },
 ] as const;
 
+interface WeeklyChallenge {
+  id: string;
+  title: string;
+  prompt: string;
+  kind: "trivia" | "poll";
+  options: string[];
+  rewardPoints: number;
+  correctOptionIndex?: number;
+}
+
+const HOUSE_META: Record<HouseElement, { icon: typeof Flame; colorClass: string }> = {
+  Fire: { icon: Flame, colorClass: "text-orange-300" },
+  Earth: { icon: Mountain, colorClass: "text-emerald-300" },
+  Air: { icon: Wind, colorClass: "text-sky-300" },
+  Water: { icon: Droplets, colorClass: "text-blue-300" },
+};
+
+const WEEKLY_CHALLENGES: WeeklyChallenge[] = [
+  {
+    id: "astro-trivia-1",
+    title: "Elemental Trivia",
+    prompt: "Which zodiac sign is a Water sign?",
+    kind: "trivia",
+    options: ["Gemini", "Scorpio", "Aries", "Leo"],
+    correctOptionIndex: 1,
+    rewardPoints: 30,
+  },
+  {
+    id: "community-poll-1",
+    title: "Community Poll",
+    prompt: "Which marketplace tent should get a featured spotlight this week?",
+    kind: "poll",
+    options: ["The Observatory", "The Conservatory", "The Gallery", "The Technomancy Lab"],
+    rewardPoints: 20,
+  },
+];
+
+const DISCOUNT_STEPS: Array<{ minPoints: number; percent: number }> = [
+  { minPoints: 100, percent: 20 },
+  { minPoints: 70, percent: 15 },
+  { minPoints: 40, percent: 10 },
+  { minPoints: 20, percent: 5 },
+];
+
 export default function Marketplace() {
   const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
@@ -45,6 +92,10 @@ export default function Marketplace() {
   const [checkoutListingId, setCheckoutListingId] = useState<string | null>(null);
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
   const [activeTent, setActiveTent] = useState<string | null>(null);
+  const [joinedHouse, setJoinedHouse] = useState<HouseElement | null>(null);
+  const [housePoints, setHousePoints] = useState(0);
+  const [challengeAnswers, setChallengeAnswers] = useState<Record<string, number>>({});
+  const [isLoadingHouseProgress, setIsLoadingHouseProgress] = useState(false);
   const [form, setForm] = useState({
     title: "",
     price: "",
@@ -53,6 +104,24 @@ export default function Marketplace() {
     imageUrl: "",
   });
   const [scope, animate] = useAnimate();
+  const currentWeekKey = useMemo(() => getWeekKey(), []);
+
+  const dominantElement = useMemo(
+    () => deriveDominantElement(profile?.sun_sign, profile?.moon_sign, profile?.rising_sign),
+    [profile?.sun_sign, profile?.moon_sign, profile?.rising_sign]
+  );
+
+  const discountPercent = useMemo(() => {
+    for (const step of DISCOUNT_STEPS) {
+      if (housePoints >= step.minPoints) return step.percent;
+    }
+    return 0;
+  }, [housePoints]);
+
+  const getDbClient = async () => {
+    const token = await getToken({ template: "supabase" }).catch(() => null);
+    return token ? getAuthenticatedClient(token) : supabase;
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -96,6 +165,137 @@ export default function Marketplace() {
     run();
   }, [form.title, form.price, form.description, animate]);
 
+  useEffect(() => {
+    if (!user) {
+      setJoinedHouse(null);
+      setHousePoints(0);
+      setChallengeAnswers({});
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadHouseProgress = async () => {
+      setIsLoadingHouseProgress(true);
+      try {
+        const db = await getDbClient();
+        const [{ data: membership }, { data: weeklyProgress }] = await Promise.all([
+          (db as any)
+            .from("house_memberships")
+            .select("house")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+          (db as any)
+            .from("house_weekly_progress")
+            .select("points, challenge_answers, house")
+            .eq("user_id", user.id)
+            .eq("week_key", currentWeekKey)
+            .maybeSingle(),
+        ]);
+
+        if (!isMounted) return;
+        const selectedHouse = (membership?.house ?? weeklyProgress?.house ?? null) as HouseElement | null;
+        const points = typeof weeklyProgress?.points === "number" ? weeklyProgress.points : 0;
+        const answers =
+          weeklyProgress?.challenge_answers && typeof weeklyProgress.challenge_answers === "object"
+            ? (weeklyProgress.challenge_answers as Record<string, number>)
+            : {};
+
+        setJoinedHouse(selectedHouse);
+        setHousePoints(points);
+        setChallengeAnswers(answers);
+      } catch {
+        if (!isMounted) return;
+        setJoinedHouse(null);
+        setHousePoints(0);
+        setChallengeAnswers({});
+      } finally {
+        if (isMounted) setIsLoadingHouseProgress(false);
+      }
+    };
+
+    loadHouseProgress();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id, currentWeekKey]);
+
+  const persistWeeklyProgress = async (nextPoints: number, nextAnswers: Record<string, number>, house: HouseElement | null) => {
+    if (!user || !house) return;
+    try {
+      const db = await getDbClient();
+      await (db as any).from("house_weekly_progress").upsert(
+        {
+          user_id: user.id,
+          week_key: currentWeekKey,
+          house,
+          points: nextPoints,
+          challenge_answers: nextAnswers,
+        },
+        { onConflict: "user_id,week_key" }
+      );
+    } catch {
+      // Ignore persistence errors to keep marketplace interaction responsive.
+    }
+  };
+
+  const joinHouse = async (house: HouseElement) => {
+    const previousHouse = joinedHouse;
+    setJoinedHouse(house);
+    try {
+      const db = await getDbClient();
+      if (user) {
+        await (db as any).from("house_memberships").upsert({ user_id: user.id, house }, { onConflict: "user_id" });
+        await persistWeeklyProgress(housePoints, challengeAnswers, house);
+      }
+      toast({
+        title: `Joined House ${house}`,
+        description: "Complete weekly trivia and polls to earn Bazaar discounts.",
+      });
+    } catch {
+      setJoinedHouse(previousHouse);
+      toast({
+        variant: "destructive",
+        title: "Could not join house",
+        description: "Please try again.",
+      });
+    }
+  };
+
+  const submitChallengeAnswer = async (challenge: WeeklyChallenge, optionIndex: number) => {
+    if (!joinedHouse || challengeAnswers[challenge.id] !== undefined) return;
+    const isCorrect = challenge.kind !== "trivia" || challenge.correctOptionIndex === optionIndex;
+    if (!isCorrect) {
+      const nextAnswers = { ...challengeAnswers, [challenge.id]: optionIndex };
+      setChallengeAnswers(nextAnswers);
+      await persistWeeklyProgress(housePoints, nextAnswers, joinedHouse);
+      toast({
+        variant: "destructive",
+        title: "No points this round",
+        description: "Try next week's challenge for more house points.",
+      });
+      return;
+    }
+
+    const nextAnswers = { ...challengeAnswers, [challenge.id]: optionIndex };
+    const nextPoints = housePoints + challenge.rewardPoints;
+    setChallengeAnswers(nextAnswers);
+    setHousePoints(nextPoints);
+    await persistWeeklyProgress(nextPoints, nextAnswers, joinedHouse);
+    toast({
+      title: `+${challenge.rewardPoints} points`,
+      description: `House ${joinedHouse} earned rewards for this week.`,
+    });
+  };
+
+  const formatCents = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+  const applyDiscountToCents = (amountCents: number) => {
+    if (discountPercent <= 0) return amountCents;
+    return Math.max(50, Math.round(amountCents * (1 - discountPercent / 100)));
+  };
+
   const addListing = () => {
     if (!activeTent || !form.title.trim() || !form.price.trim() || !form.description.trim()) return;
     const listing: Listing = {
@@ -134,8 +334,9 @@ export default function Marketplace() {
   const checkoutListing = async (listing: Listing) => {
     try {
       setCheckoutListingId(listing.id);
-      const amountCents = parseAmountCents(listing.price);
-      if (!amountCents) throw new Error("Invalid listing price");
+      const baseAmountCents = parseAmountCents(listing.price);
+      if (!baseAmountCents) throw new Error("Invalid listing price");
+      const amountCents = applyDiscountToCents(baseAmountCents);
       const token = await getToken({ template: "supabase" }).catch(() => null);
       const headers: Record<string, string> = {};
       if (token) {
@@ -152,6 +353,11 @@ export default function Marketplace() {
             seller: listing.seller,
             sellerStripeAccountId: listing.sellerStripeAccountId ?? undefined,
             amountCents,
+            metadata: {
+              baseAmountCents,
+              houseDiscountPercent: discountPercent,
+              house: joinedHouse,
+            },
           },
         },
       });
@@ -216,6 +422,92 @@ export default function Marketplace() {
           <p className="text-sm text-muted-foreground mb-4">
             Lantern-lit stalls, mystical goods, and cosmic creators. Discover and sell astrology products, readings, templates, and digital tools.
           </p>
+          <div className="mb-4 rounded-xl border border-border/30 bg-card/40 p-4 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Elemental Houses</p>
+                <p className="text-sm text-foreground">
+                  Join a house to compete in weekly trivia and polls. Points unlock marketplace discounts.
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Weekly points</p>
+                <p className="text-lg font-semibold">{housePoints}</p>
+              </div>
+            </div>
+
+            {dominantElement && !joinedHouse && (
+              <p className="text-xs text-muted-foreground">
+                Suggested house from your chart: <span className="text-foreground font-medium">{dominantElement}</span>
+              </p>
+            )}
+
+            <div className="grid gap-2 sm:grid-cols-4">
+              {(Object.keys(HOUSE_META) as HouseElement[]).map((house) => {
+                const Icon = HOUSE_META[house].icon;
+                const isSelected = joinedHouse === house;
+                return (
+                  <Button
+                    key={house}
+                    type="button"
+                    variant={isSelected ? "default" : "outline"}
+                    className="justify-start gap-2"
+                    disabled={isLoadingHouseProgress}
+                    onClick={() => joinHouse(house)}
+                  >
+                    <Icon className={`h-4 w-4 ${HOUSE_META[house].colorClass}`} />
+                    House {house}
+                  </Button>
+                );
+              })}
+            </div>
+
+            {joinedHouse ? (
+              <div className="rounded-lg border border-accent/25 bg-black/10 p-3 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm text-foreground">House {joinedHouse} weekly challenges</p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Trophy className="h-3.5 w-3.5" />
+                    Discount: {discountPercent}%
+                  </p>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {WEEKLY_CHALLENGES.map((challenge) => {
+                    const answered = challengeAnswers[challenge.id] !== undefined;
+                    return (
+                      <div key={challenge.id} className="rounded-md border border-border/30 p-3 bg-card/60 space-y-2">
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">{challenge.title}</p>
+                        <p className="text-sm text-foreground">{challenge.prompt}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {challenge.options.map((option, optionIndex) => (
+                            <Button
+                              key={option}
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              disabled={answered || isLoadingHouseProgress}
+                              onClick={() => submitChallengeAnswer(challenge, optionIndex)}
+                            >
+                              {option}
+                            </Button>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          Reward: {challenge.rewardPoints} points{challenge.kind === "trivia" ? " (correct answer only)" : ""}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                {isLoadingHouseProgress
+                  ? "Loading your house progress..."
+                  : "Choose a house to unlock weekly challenges and discounts."}
+              </p>
+            )}
+          </div>
           <div className="mb-2">
             <BazaarTentScene
               categories={BAZAAR_CATEGORIES}
@@ -337,10 +629,25 @@ export default function Marketplace() {
                 {listing.imageUrl && (
                   <img src={listing.imageUrl} alt={listing.title} className="w-full h-36 rounded-lg object-cover border border-border/40" />
                 )}
-                <div className="flex items-start justify-between gap-2">
-                  <h2 className="font-medium text-foreground">{listing.title}</h2>
-                  <span className="text-accent font-semibold">{listing.price}</span>
-                </div>
+                {(() => {
+                  const baseCents = parseAmountCents(listing.price);
+                  const discountedCents = baseCents ? applyDiscountToCents(baseCents) : null;
+                  return (
+                    <div className="flex items-start justify-between gap-2">
+                      <h2 className="font-medium text-foreground">{listing.title}</h2>
+                      <div className="text-right">
+                        {discountedCents && discountPercent > 0 ? (
+                          <>
+                            <p className="text-xs text-muted-foreground line-through">{formatCents(baseCents!)}</p>
+                            <p className="text-accent font-semibold">{formatCents(discountedCents)}</p>
+                          </>
+                        ) : (
+                          <span className="text-accent font-semibold">{listing.price}</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
                 <p className="text-sm text-muted-foreground">{listing.description}</p>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>{listing.seller}</span>
@@ -356,7 +663,7 @@ export default function Marketplace() {
                     onClick={() => checkoutListing(listing)}
                     disabled={checkoutListingId === listing.id}
                   >
-                    {checkoutListingId === listing.id ? "Starting checkout..." : "Buy with Stripe / Link"}
+                    {checkoutListingId === listing.id ? "Starting checkout..." : discountPercent > 0 ? `Buy with ${discountPercent}% House Discount` : "Buy with Stripe / Link"}
                   </Button>
                   {listing.sellerId === (user?.id ?? "local-user") && (
                     <Button
@@ -375,7 +682,7 @@ export default function Marketplace() {
                   </div>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Checkout supports cards, Cash App Pay, and Link.
+                  Checkout supports cards, Cash App Pay, and Link{discountPercent > 0 ? `, with your ${discountPercent}% house discount applied.` : "."}
                 </p>
               </article>
             ))}

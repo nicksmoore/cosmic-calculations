@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Search, Users, Flame, Droplets, Wind, Mountain } from "lucide-react";

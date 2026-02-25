@@ -166,11 +166,11 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
           </div>
         );
 
-      case 2:
-        const selectedDate = formData.birthDate 
+      case 2: {
+        const selectedDate = formData.birthDate
           ? parse(formData.birthDate, "yyyy-MM-dd", new Date())
           : undefined;
-        
+
         return (
           <div className="space-y-4">
             <Popover>
@@ -183,7 +183,7 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
                   )}
                 >
                   <CalendarIcon className="mr-3 h-5 w-5 text-muted-foreground" />
-                  {formData.birthDate 
+                  {formData.birthDate
                     ? format(selectedDate!, "MMMM d, yyyy")
                     : "Select your birth date"
                   }
@@ -212,6 +212,7 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
             )}
           </div>
         );
+      }
 
       case 3:
         return (

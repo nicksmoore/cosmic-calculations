@@ -13,6 +13,7 @@ export { calculateHouses, findHouse } from "./houses";
 
 // Re-export aspect calculations
 export { calculateAspects } from "./aspects";
+import { calculateAspects } from "./aspects";
 
 // Re-export astronomia helpers for tests
 export { 
@@ -190,6 +191,5 @@ export function getChartAspects(
     includeMinor?: boolean;
   }
 ) {
-  const { calculateAspects } = require("./aspects");
   return calculateAspects(planets, options);
 }

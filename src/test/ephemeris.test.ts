@@ -56,7 +56,7 @@ describe("Sidereal Time Calculations", () => {
     console.log("ST0 raw (deg):", st0Raw.toFixed(4));
     
     // Normalize ST0
-    let st0Deg = ((st0Raw % 360) + 360) % 360;
+    const st0Deg = ((st0Raw % 360) + 360) % 360;
     console.log("ST0 normalized (deg):", st0Deg.toFixed(4));
     console.log("ST0 (hours):", (st0Deg / 15).toFixed(4));
     
