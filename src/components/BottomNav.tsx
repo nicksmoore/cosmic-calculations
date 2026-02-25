@@ -1,6 +1,9 @@
 // src/components/BottomNav.tsx
+import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useFriendNotifications } from "@/hooks/useFriendNotifications";
+import { useMagneticButton } from "@/hooks/useMagneticButton";
 
 const tabs = [
   { label: "Firmament", icon: "🌌", to: "/feed" },
@@ -18,6 +21,7 @@ export default function BottomNav({ onOpenPost, onSignOut }: BottomNavProps) {
   const location = useLocation();
   const { data: friendNotifications } = useFriendNotifications();
   const friendCount = friendNotifications?.count ?? 0;
+  const magnetic = useMagneticButton(0.3);
 
   return (
     <nav
@@ -53,14 +57,21 @@ export default function BottomNav({ onOpenPost, onSignOut }: BottomNavProps) {
           })}
 
           {/* Post button — center */}
-          <button
-            onClick={onOpenPost}
-            aria-label="Create post"
-            className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 transition-colors px-3 py-2 shadow-lg"
+          <motion.div
+            ref={magnetic.ref as React.RefObject<HTMLDivElement>}
+            style={{ x: magnetic.x, y: magnetic.y }}
+            onMouseMove={magnetic.onMouseMove}
+            onMouseLeave={magnetic.onMouseLeave}
           >
-            <span className="text-xl leading-none">⊕</span>
-            <span className="text-[10px] hidden sm:block">Post</span>
-          </button>
+            <button
+              onClick={onOpenPost}
+              aria-label="Create post"
+              className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 transition-colors px-3 py-2 shadow-lg"
+            >
+              <span className="text-xl leading-none">⊕</span>
+              <span className="text-[10px] hidden sm:block">Post</span>
+            </button>
+          </motion.div>
 
           <button
             onClick={onSignOut}

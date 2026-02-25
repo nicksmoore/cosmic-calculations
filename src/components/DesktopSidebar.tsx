@@ -1,5 +1,8 @@
+import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { useMagneticButton } from "@/hooks/useMagneticButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -15,6 +18,7 @@ export default function DesktopSidebar({ onOpenPost }: DesktopSidebarProps) {
   const { profile } = useProfile();
   const { data: friendNotifications } = useFriendNotifications();
   const friendCount = friendNotifications?.count ?? 0;
+  const magnetic = useMagneticButton(0.3);
 
   return (
     <aside className="hidden md:flex md:w-72 lg:w-80 shrink-0 border-r border-border/40 p-6 sticky top-0 h-screen z-20 backdrop-blur-sm">
@@ -88,9 +92,16 @@ export default function DesktopSidebar({ onOpenPost }: DesktopSidebarProps) {
           </NavLink>
         </nav>
 
-        <Button className="w-full" onClick={onOpenPost}>
-          New Post
-        </Button>
+        <motion.div
+          ref={magnetic.ref as React.RefObject<HTMLDivElement>}
+          style={{ x: magnetic.x, y: magnetic.y }}
+          onMouseMove={magnetic.onMouseMove}
+          onMouseLeave={magnetic.onMouseLeave}
+        >
+          <Button className="w-full" onClick={onOpenPost}>
+            New Post
+          </Button>
+        </motion.div>
         <Button variant="outline" className="w-full" onClick={signOut}>
           Sign Out
         </Button>
