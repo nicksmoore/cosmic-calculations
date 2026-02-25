@@ -62,6 +62,7 @@ export type Database = {
           created_at: string
           current_status: string | null
           display_name: string | null
+          gender: string | null
           id: string
           is_public: boolean | null
           mars_bio: string | null
@@ -86,6 +87,7 @@ export type Database = {
           created_at?: string
           current_status?: string | null
           display_name?: string | null
+          gender?: string | null
           id?: string
           is_public?: boolean | null
           mars_bio?: string | null
@@ -110,6 +112,7 @@ export type Database = {
           created_at?: string
           current_status?: string | null
           display_name?: string | null
+          gender?: string | null
           id?: string
           is_public?: boolean | null
           mars_bio?: string | null
