@@ -19,7 +19,7 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-background pointer-events-auto">
       <StarField />
       <div className="relative z-10">
         <SignIn

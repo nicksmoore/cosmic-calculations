@@ -35,7 +35,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground overflow-hidden pointer-events-auto">
       <StarField />
 
       <div className="relative z-10 pt-8 pb-4 text-center">
