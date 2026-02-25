@@ -25,7 +25,7 @@ export async function detectPerformanceTier(): Promise<PerformanceTier> {
 
   if ("getBattery" in navigator) {
     try {
-      const battery = await (navigator as any).getBattery();
+      const battery = await (navigator as Navigator & { getBattery: () => Promise<{ charging: boolean; level: number }> }).getBattery();
       if (!battery.charging && battery.level < 0.2) return 3;
     } catch {
       // getBattery not supported or blocked — ignore

@@ -15,7 +15,7 @@ describe("detectPerformanceTierSync", () => {
       matchMedia: () => ({ matches: false }),
     });
     const mockEl = { getContext: () => null };
-    vi.spyOn(document, "createElement").mockReturnValue(mockEl as any);
+    vi.spyOn(document, "createElement").mockReturnValue(mockEl as unknown as HTMLElement);
     expect(detectPerformanceTierSync()).toBe(3);
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
