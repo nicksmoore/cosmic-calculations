@@ -21,7 +21,7 @@
     --popover-foreground: 45 20% 95%;
 
     /* Nebula Violet Primary */
-    --primary: 275 100% 25%;
+    --primary: 275 80% 62%;
     --primary-foreground: 45 20% 95%;
 
     /* Secondary - Deeper Obsidian */
@@ -49,7 +49,7 @@
     /* Sidebar */
     --sidebar-background: 235 25% 8%;
     --sidebar-foreground: 45 20% 90%;
-    --sidebar-primary: 275 100% 25%;
+    --sidebar-primary: 275 80% 62%;
     --sidebar-primary-foreground: 45 20% 95%;
     --sidebar-accent: 235 20% 15%;
     --sidebar-accent-foreground: 45 20% 90%;
@@ -57,8 +57,8 @@
     --sidebar-ring: 275 80% 40%;
 
     /* Custom Cosmic Connections Tokens */
-    --nebula: 275 100% 25%;
-    --nebula-glow: 275 80% 40%;
+    --nebula: 275 80% 62%;
+    --nebula-glow: 275 70% 75%;
     --gold: 45 100% 50%;
     --gold-dim: 45 80% 35%;
     --obsidian: 235 25% 7%;
@@ -80,7 +80,7 @@
     --popover: 235 20% 11%;
     --popover-foreground: 45 20% 95%;
 
-    --primary: 275 100% 25%;
+    --primary: 275 80% 62%;
     --primary-foreground: 45 20% 95%;
 
     --secondary: 235 20% 15%;
@@ -101,7 +101,7 @@
 
     --sidebar-background: 235 25% 8%;
     --sidebar-foreground: 45 20% 90%;
-    --sidebar-primary: 275 100% 25%;
+    --sidebar-primary: 275 80% 62%;
     --sidebar-primary-foreground: 45 20% 95%;
     --sidebar-accent: 235 20% 15%;
     --sidebar-accent-foreground: 45 20% 90%;
@@ -230,6 +230,173 @@
       opacity: 1;
     }
   }
+
+  /* 2026 UI primitives */
+  .liquid-glass {
+    background:
+      linear-gradient(155deg, hsl(var(--glass-bg)) 0%, hsl(var(--glass-bg)) 48%, hsl(var(--nebula-glow) / 0.12) 100%);
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow:
+      inset 0 1px 0 hsl(var(--foreground) / 0.12),
+      0 14px 36px hsl(var(--obsidian) / 0.55);
+    backdrop-filter: blur(calc(var(--glass-blur) + 8px)) saturate(130%);
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 8px)) saturate(130%);
+  }
+
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .bento-tile {
+    border-radius: 1rem;
+    border: 1px solid hsl(var(--border) / 0.45);
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .bento-tile:hover {
+    transform: translateY(-2px);
+    border-color: hsl(var(--accent) / 0.45);
+    box-shadow: 0 12px 32px hsl(var(--obsidian) / 0.45);
+  }
+
+  .kinetic-title {
+    font-variation-settings: "wght" 560;
+    letter-spacing: 0.01em;
+    transition: transform 220ms ease, letter-spacing 220ms ease;
+  }
+
+  .kinetic-title:hover {
+    transform: skewX(-4deg) scale(1.02);
+    letter-spacing: 0.03em;
+  }
+
+  .bazaar-ground {
+    position: relative;
+  }
+
+  .tent-card {
+    position: relative;
+    border-radius: 0.9rem;
+    border: 1px solid hsl(var(--border) / 0.45);
+    background: linear-gradient(180deg, hsl(var(--card) / 0.78), hsl(var(--card) / 0.62));
+    min-height: 168px;
+    transform-style: preserve-3d;
+    transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    animation: tent-float 5s ease-in-out infinite;
+  }
+
+  .tent-card:hover {
+    transform: translateY(-3px) rotateX(2deg);
+    border-color: hsl(var(--accent) / 0.55);
+    box-shadow: 0 16px 34px hsl(var(--obsidian) / 0.5);
+  }
+
+  .tent-card-active {
+    border-color: hsl(var(--accent) / 0.7);
+    box-shadow: 0 0 24px hsl(var(--accent) / 0.28), 0 16px 36px hsl(var(--obsidian) / 0.52);
+  }
+
+  .tent-roof {
+    position: absolute;
+    top: 12px;
+    left: 22px;
+    right: 22px;
+    height: 0;
+    border-left: 22px solid transparent;
+    border-right: 22px solid transparent;
+    border-bottom: 20px solid hsl(var(--accent) / 0.72);
+    filter: drop-shadow(0 6px 8px hsl(var(--accent) / 0.2));
+  }
+
+  .tent-roof-side {
+    position: absolute;
+    top: 23px;
+    width: 18px;
+    height: 18px;
+    background: hsl(var(--gold-dim) / 0.55);
+    transform: skewY(-20deg);
+    opacity: 0.7;
+  }
+
+  .tent-roof-left {
+    left: 22px;
+    border-radius: 0 0 0 5px;
+  }
+
+  .tent-roof-right {
+    right: 22px;
+    border-radius: 0 0 5px 0;
+    transform: skewY(20deg);
+  }
+
+  .tent-body {
+    position: absolute;
+    top: 32px;
+    left: 24px;
+    right: 24px;
+    bottom: 16px;
+    border-radius: 0.6rem;
+    border: 1px solid hsl(var(--border) / 0.45);
+    background:
+      linear-gradient(180deg, hsl(var(--card) / 0.86), hsl(var(--card) / 0.58)),
+      repeating-linear-gradient(90deg, transparent 0 18px, hsl(var(--accent) / 0.06) 18px 22px);
+  }
+
+  .tent-door {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 34px;
+    border-radius: 999px 999px 2px 2px;
+    background: linear-gradient(180deg, hsl(var(--primary) / 0.25), hsl(var(--obsidian) / 0.6));
+    border: 1px solid hsl(var(--border) / 0.45);
+  }
+
+  .tent-pole {
+    position: absolute;
+    top: 34px;
+    bottom: 20px;
+    width: 3px;
+    background: linear-gradient(180deg, hsl(var(--accent) / 0.7), hsl(var(--gold-dim) / 0.45));
+    opacity: 0.65;
+  }
+
+  .tent-pole-left { left: 32px; }
+  .tent-pole-right { right: 32px; }
+
+  .tent-shadow {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 8px;
+    height: 12px;
+    border-radius: 999px;
+    background: radial-gradient(ellipse at center, hsl(var(--obsidian) / 0.55), transparent 70%);
+    filter: blur(1px);
+  }
+
+  .tent-flag {
+    position: absolute;
+    top: 2px;
+    right: 24px;
+    width: 12px;
+    height: 16px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, hsl(var(--accent) / 0.85), hsl(var(--gold-dim) / 0.6));
+    box-shadow: 0 0 10px hsl(var(--accent) / 0.35);
+  }
+
+  @keyframes tent-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+  }
 }
 
 @layer utilities {
@@ -261,5 +428,58 @@
   @keyframes pulse-ring {
     0%, 100% { box-shadow: 0 0 0 0 hsl(var(--accent) / 0.4); }
     50%       { box-shadow: 0 0 0 8px hsl(var(--accent) / 0); }
+  }
+
+  /* Avatar conic ring rotation */
+  @keyframes orbit {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* Aurora top bar */
+  @keyframes aurora-sweep {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .aurora-bar {
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(275 80% 70%) 25%,
+      hsl(45 100% 60%) 50%,
+      hsl(200 80% 65%) 75%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: aurora-sweep 5s ease-in-out infinite;
+    opacity: 0.85;
+  }
+
+  /* Glass tiers */
+  .glass-xs {
+    background: hsl(235 20% 15% / 0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid hsl(275 40% 30% / 0.2);
+    border-radius: var(--radius);
+  }
+
+  .glass-sm {
+    background: hsl(235 20% 15% / 0.50);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid hsl(275 40% 30% / 0.25);
+    border-radius: var(--radius);
+  }
+
+  .glass-lg {
+    background: hsl(235 20% 13% / 0.75);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    border: 1px solid hsl(275 40% 30% / 0.35);
+    border-radius: var(--radius);
   }
 }

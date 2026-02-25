@@ -36,7 +36,7 @@ export function calculateGST(
   
   // Calculate GST using IAU formula
   const T = (JD - 2451545.0) / 36525.0;
-  let gst = 280.46061837 + 360.98564736629 * (JD - 2451545.0) + 0.000387933 * T * T - T * T * T / 38710000;
+  const gst = 280.46061837 + 360.98564736629 * (JD - 2451545.0) + 0.000387933 * T * T - T * T * T / 38710000;
   
   return ((gst % 360) + 360) % 360;
 }
@@ -74,7 +74,7 @@ export function eclipticToEquatorial(
  * MC = where planet is at zenith (culminating)
  */
 export function calculateMCLongitude(ra: number, gst: number): number {
-  let mcLong = ra - gst;
+  const mcLong = ra - gst;
   return ((mcLong % 360) + 360) % 360 - 180; // Convert to -180 to 180
 }
 
@@ -109,7 +109,7 @@ export function calculateHorizonLatitude(
   // Check if solution exists
   if (tanDec === 0) return null;
   
-  let tanLat = -cosLHA / tanDec;
+  const tanLat = -cosLHA / tanDec;
   
   // Clamp to valid range
   if (Math.abs(tanLat) > 1000) return null;

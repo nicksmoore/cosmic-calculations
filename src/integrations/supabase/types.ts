@@ -69,6 +69,10 @@ export type Database = {
           moon_sign: string | null
           rising_sign: string | null
           status_updated_at: string | null
+          stripe_charges_enabled: boolean
+          stripe_connect_account_id: string | null
+          stripe_details_submitted: boolean
+          stripe_payouts_enabled: boolean
           sun_sign: string | null
           time_unknown: boolean | null
           updated_at: string
@@ -93,6 +97,10 @@ export type Database = {
           moon_sign?: string | null
           rising_sign?: string | null
           status_updated_at?: string | null
+          stripe_charges_enabled?: boolean
+          stripe_connect_account_id?: string | null
+          stripe_details_submitted?: boolean
+          stripe_payouts_enabled?: boolean
           sun_sign?: string | null
           time_unknown?: boolean | null
           updated_at?: string
@@ -117,6 +125,10 @@ export type Database = {
           moon_sign?: string | null
           rising_sign?: string | null
           status_updated_at?: string | null
+          stripe_charges_enabled?: boolean
+          stripe_connect_account_id?: string | null
+          stripe_details_submitted?: boolean
+          stripe_payouts_enabled?: boolean
           sun_sign?: string | null
           time_unknown?: boolean | null
           updated_at?: string

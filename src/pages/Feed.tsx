@@ -1,7 +1,8 @@
 import { useRef, useCallback } from "react";
-import { Loader2 } from "lucide-react";
+import { CosmicLoader } from "@/components/ui/CosmicLoader";
 import TodaysPlanetaryBar from "@/components/TodaysPlanetaryBar";
 import DailyHookCard from "@/components/feed/DailyHookCard";
+import UpcomingCosmicEvents from "@/components/UpcomingCosmicEvents";
 import PostCard from "@/components/feed/PostCard";
 import StarField from "@/components/StarField";
 import { useFeed } from "@/hooks/useFeed";
@@ -9,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useEphemeris } from "@/hooks/useEphemeris";
 import { BirthData } from "@/components/intake/BirthDataForm";
+import { timezoneFromLongitude } from "@/lib/timezone";
 
 function FeedList() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useFeed();
@@ -29,7 +31,7 @@ function FeedList() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <CosmicLoader size="md" />
       </div>
     );
   }
@@ -53,14 +55,14 @@ function FeedList() {
 
   return (
     <div className="space-y-4">
-      {posts.map(post => (
-        <PostCard key={post.id} post={post} currentUserId={user?.id} />
+      {posts.map((post, i) => (
+        <PostCard key={post.id} post={post} currentUserId={user?.id} index={i} />
       ))}
       {/* Infinite scroll sentinel */}
       <div ref={sentinelRef} className="h-4" />
       {isFetchingNextPage && (
         <div className="flex justify-center py-4">
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          <CosmicLoader size="sm" />
         </div>
       )}
       {!hasNextPage && posts.length > 0 && (
@@ -85,7 +87,7 @@ export default function Feed() {
         location: profile.birth_location ?? "",
         latitude: profile.birth_lat,
         longitude: profile.birth_lng,
-        timezone: "UTC+0",
+        timezone: timezoneFromLongitude(profile.birth_lng),
       }
     : null;
 
@@ -94,16 +96,24 @@ export default function Feed() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <StarField />
-      <main className="container mx-auto px-4 pt-6 pb-28 max-w-2xl relative z-10">
-        {/* Sky Header */}
-        {chartData && (
-          <div className="mb-4">
-            <TodaysPlanetaryBar chartData={chartData} />
-          </div>
-        )}
+      <main className="mx-auto w-full max-w-6xl px-4 pt-6 pb-28 md:px-8 md:pb-10 relative z-10">
+        <section className="bento-grid mb-4">
+          {/* Sky Header */}
+          {chartData && (
+            <div className="bento-tile col-span-12 p-3">
+              <TodaysPlanetaryBar chartData={chartData} />
+            </div>
+          )}
 
-        {/* Sticky Daily Hook */}
-        <DailyHookCard />
+          {/* Sticky Daily Hook */}
+          <div className="col-span-12">
+            <DailyHookCard />
+          </div>
+
+          <div className="col-span-12">
+            <UpcomingCosmicEvents />
+          </div>
+        </section>
 
         {/* Feed */}
         <FeedList />

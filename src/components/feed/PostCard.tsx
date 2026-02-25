@@ -1,15 +1,29 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Loader2 } from "lucide-react";
+import { Heart, MessageCircle, Loader2, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { FeedPost } from "@/hooks/useFeed";
+import { ConstellationDivider } from "@/components/ui/ConstellationDivider";
 import { useToggleLike } from "@/hooks/useToggleLike";
 import { useComments, useAddComment, Comment } from "@/hooks/useComments";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useDeletePost } from "@/hooks/useDeletePost";
+import PlacementInsightPopover from "@/components/PlacementInsightPopover";
+
+const ELEMENT_BORDER: Record<string, string> = {
+  // Fire — warm rose/amber
+  Aries: "border-l-rose-500/70", Leo: "border-l-rose-500/70", Sagittarius: "border-l-orange-400/70",
+  // Earth — emerald
+  Taurus: "border-l-emerald-500/70", Virgo: "border-l-emerald-500/70", Capricorn: "border-l-emerald-600/70",
+  // Air — sky/indigo
+  Gemini: "border-l-sky-400/70", Libra: "border-l-sky-400/70", Aquarius: "border-l-indigo-400/70",
+  // Water — blue/violet
+  Cancer: "border-l-blue-400/70", Scorpio: "border-l-blue-500/70", Pisces: "border-l-violet-400/70",
+};
 
 const PLANET_GLYPHS: Record<string, string> = {
   Sun: "☀", Moon: "☽", Mercury: "☿", Venus: "♀", Mars: "♂",
@@ -33,19 +47,43 @@ function BigThreeGlyphs({
 }) {
   if (!sun && !moon && !rising) return null;
   return (
-    <span className="text-muted-foreground text-sm">
-      {sun && `☉${SIGN_GLYPHS[sun] ?? ""}`}
-      {moon && ` ☽${SIGN_GLYPHS[moon] ?? ""}`}
-      {rising && ` ↑${SIGN_GLYPHS[rising] ?? ""}`}
+    <span className="text-sm tracking-wide inline-flex items-center gap-2">
+      {sun && (
+        <PlacementInsightPopover
+          sign={sun}
+          placementLabel={`Sun in ${sun}`}
+          className="hover:opacity-80 transition-opacity"
+        >
+          <span className="text-amber-300/90">{`☉${SIGN_GLYPHS[sun] ?? ""}`}</span>
+        </PlacementInsightPopover>
+      )}
+      {moon && (
+        <PlacementInsightPopover
+          sign={moon}
+          placementLabel={`Moon in ${moon}`}
+          className="hover:opacity-80 transition-opacity"
+        >
+          <span className="text-violet-300/90">{`☽${SIGN_GLYPHS[moon] ?? ""}`}</span>
+        </PlacementInsightPopover>
+      )}
+      {rising && (
+        <PlacementInsightPopover
+          sign={rising}
+          placementLabel={`Rising in ${rising}`}
+          className="hover:opacity-80 transition-opacity"
+        >
+          <span className="text-sky-300/90">{`↑${SIGN_GLYPHS[rising] ?? ""}`}</span>
+        </PlacementInsightPopover>
+      )}
     </span>
   );
 }
 
 function TransitPillBadge({ tag }: { tag: FeedPost["transit_tags"][0] }) {
   const colorClass = !tag.is_personal
-    ? "bg-blue-500/15 text-blue-300 border-blue-500/25"
+    ? "bg-violet-500/15 text-violet-300 border-violet-500/30"
     : tag.is_primary
-    ? "bg-yellow-500/15 text-yellow-300 border-yellow-500/25"
+    ? "bg-amber-400/15 text-amber-300 border-amber-400/30"
     : "bg-white/5 text-muted-foreground border-border/20";
 
   return (
@@ -168,14 +206,17 @@ function CommentsSection({ postId }: { postId: string }) {
 interface PostCardProps {
   post: FeedPost;
   currentUserId?: string;
+  index?: number;
 }
 
-export default function PostCard({ post, currentUserId }: PostCardProps) {
+export default function PostCard({ post, currentUserId, index = 0 }: PostCardProps) {
   const toggleLike = useToggleLike();
+  const deletePost = useDeletePost();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const { toast } = useToast();
 
   const handleLike = async () => {
     if (!user) return;
@@ -199,13 +240,29 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
 
   const visibleTags = post.transit_tags.slice(0, 5);
   const extraTagCount = post.transit_tags.length - 5;
+  const isOwner = currentUserId === post.user_id;
+  const elementBorder = post.sun_sign ? (ELEMENT_BORDER[post.sun_sign] ?? "") : "";
+
+  const handleDelete = async () => {
+    if (!isOwner) return;
+    const ok = window.confirm("Delete this post? This action cannot be undone.");
+    if (!ok) return;
+    try {
+      await deletePost.mutateAsync(post.id);
+      toast({ title: "Post deleted" });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      toast({ variant: "destructive", title: "Delete failed", description: message });
+    }
+  };
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-panel rounded-xl p-4"
+      transition={{ delay: Math.min(index * 0.07, 0.5), duration: 0.4, ease: "easeOut" }}
+      className={`glass-panel rounded-xl p-4 border-l-2 ${elementBorder}`}
     >
       <div className="flex items-start gap-3 mb-3">
         <button
@@ -217,10 +274,12 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
             <img
               src={post.avatar_url}
               alt=""
-              className="w-8 h-8 rounded-full hover:opacity-80 transition-opacity"
+              className="w-10 h-10 rounded-full border border-border/40 hover:opacity-80 transition-opacity"
             />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-muted hover:opacity-80 transition-opacity" />
+            <div className="w-10 h-10 rounded-full bg-primary/20 text-primary border border-border/40 hover:opacity-80 transition-opacity flex items-center justify-center text-sm font-serif">
+              {(post.display_name ?? "?").charAt(0).toUpperCase()}
+            </div>
           )}
         </button>
         <div className="min-w-0 flex-1">
@@ -237,6 +296,23 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
               rising={post.rising_sign}
             />
             <div className="flex items-center gap-1 ml-auto flex-shrink-0">
+              {isOwner && (
+                <button
+                  onClick={handleDelete}
+                  aria-label="Delete post"
+                  disabled={deletePost.isPending}
+                  className="text-xs text-muted-foreground/80 hover:text-destructive transition-colors px-2 py-1 rounded-md border border-border/40 hover:border-destructive/50 inline-flex items-center gap-1"
+                >
+                  {deletePost.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete</span>
+                    </>
+                  )}
+                </button>
+              )}
               {post.transit_snapshot && post.transit_snapshot.length > 0 && (
                 <TransitStamp snapshot={post.transit_snapshot} />
               )}
@@ -246,7 +322,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
         </div>
       </div>
 
-      <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+      <p className="text-base leading-relaxed whitespace-pre-wrap break-words">
         {post.content}
       </p>
 
@@ -263,10 +339,12 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
         </div>
       )}
 
-      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/20">
-        <button
+      <ConstellationDivider className="mt-3" />
+      <div className="flex items-center gap-4">
+        <motion.button
           onClick={handleLike}
           disabled={!user || toggleLike.isPending}
+          whileTap={user ? { scale: 1.3 } : {}}
           aria-label={`Like post, ${post.likes_count + (isLiked ? 1 : 0)} likes`}
           className={`flex items-center gap-1.5 text-xs transition-colors ${
             isLiked
@@ -274,9 +352,18 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
               : "text-muted-foreground hover:text-rose-400"
           }`}
         >
-          <Heart className={`h-4 w-4 ${isLiked ? "fill-rose-400" : ""}`} />
+          <motion.span
+            animate={isLiked
+              ? { scale: [1, 1.5, 0.9, 1.1, 1], rotate: [0, -15, 10, -5, 0] }
+              : { scale: 1, rotate: 0 }
+            }
+            transition={{ duration: 0.45, ease: "easeOut" }}
+            style={{ display: "inline-flex" }}
+          >
+            <Heart className={`h-4 w-4 ${isLiked ? "fill-rose-400" : ""}`} />
+          </motion.span>
           {post.likes_count + (isLiked ? 1 : 0)}
-        </button>
+        </motion.button>
 
         <button
           onClick={() => setShowComments((v) => !v)}

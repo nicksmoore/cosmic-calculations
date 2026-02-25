@@ -1,14 +1,20 @@
 // src/pages/SignIn.tsx
 import { Navigate } from "react-router-dom";
 import { SignIn } from "@clerk/clerk-react";
+import { CosmicLoaderPage } from "@/components/ui/CosmicLoader";
 import StarField from "@/components/StarField";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function SignInPage() {
   const { user, isLoading } = useAuth();
 
-  // Only redirect once auth is definitively resolved — avoids spinner flash
-  if (!isLoading && user) {
+  if (isLoading) {
+    return (
+      <CosmicLoaderPage />
+    );
+  }
+
+  if (user) {
     return <Navigate to="/feed" replace />;
   }
 
@@ -17,14 +23,19 @@ export default function SignInPage() {
       <StarField />
       <div className="relative z-10">
         <SignIn
-          forceRedirectUrl="/feed"
-          signUpForceRedirectUrl="/onboarding"
+          afterSignInUrl="/feed"
+          afterSignUpUrl="/onboarding"
           appearance={{
             elements: {
-              card: "glass-panel border-border/30 shadow-2xl",
+              card: "glass-panel border-border/30 shadow-2xl w-[360px] max-w-[92vw]",
               headerTitle: "font-serif text-ethereal",
               headerSubtitle: "text-muted-foreground",
-              formButtonPrimary: "bg-accent hover:bg-accent/90 text-accent-foreground",
+              formButtonPrimary: "bg-accent hover:bg-accent/90 text-accent-foreground h-11 text-base font-semibold",
+              socialButtonsBlockButton:
+                "bg-white text-black hover:bg-zinc-100 border-2 border-white h-11 text-base font-semibold shadow-md",
+              socialButtonsBlockButtonText: "text-black font-semibold",
+              dividerLine: "bg-border/60",
+              dividerText: "text-muted-foreground",
               footerActionLink: "text-accent hover:text-accent/80",
             },
           }}

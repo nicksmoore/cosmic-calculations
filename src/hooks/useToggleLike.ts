@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth as useClerkAuth } from "@clerk/clerk-react";
-import { getAuthenticatedClient } from "@/integrations/supabase/authClient";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 export function useToggleLike() {
@@ -13,21 +13,18 @@ export function useToggleLike() {
       if (!user) throw new Error("Must be signed in to like");
       const token = await getToken({ template: "supabase" });
       if (!token) throw new Error("Could not get auth token");
-      const client = getAuthenticatedClient(token);
 
-      if (isLiked) {
-        const { error } = await (client as any)
-          .from("post_likes")
-          .delete()
-          .eq("post_id", postId)
-          .eq("user_id", user.id);
-        if (error) throw error;
-      } else {
-        const { error } = await (client as any)
-          .from("post_likes")
-          .insert({ post_id: postId, user_id: user.id });
-        if (error) throw error;
-      }
+      const { data, error } = await supabase.functions.invoke("toggle-like", {
+        headers: { Authorization: `Bearer ${token}` },
+        body: {
+          userId: user.id,
+          postId,
+          like: !isLiked,
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || "Could not update like");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] });

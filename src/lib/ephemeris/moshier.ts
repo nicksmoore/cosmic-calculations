@@ -6,9 +6,9 @@
 import { PlanetaryPosition, PlanetName, ZODIAC_SIGNS, ZodiacSign, DMS } from "./types";
 
 // Import astronomia modules using proper exports
-// @ts-ignore - astronomia types
+// @ts-expect-error - astronomia types
 import * as astronomia from "astronomia";
-// @ts-ignore - astronomia data (default export)
+// @ts-expect-error - astronomia data (default export)
 import astronomiaDataDefault from "astronomia/data";
 
 // Get the modules we need

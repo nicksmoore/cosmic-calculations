@@ -1,14 +1,4 @@
 ## Workflow Orchestration
-## MANDATORY: Use td for Task Management
-
-Run td usage --new-session at conversation start (or after /clear). This tells you what to work on next.
-
-Sessions are automatic (based on terminal/agent context). Optional:
-- td session "name" to label the current session
-- td session --new to force a new session in the same context
-
-Use td usage -q after first read.
-
 ### 1. Plan-Driven Execution
  * Mandatory Planning: Enter plan mode for any task involving >2 steps or architectural changes.
  * Stop-Loss Re-planning: If a step fails or unexpected behavior occurs, STOP. Do not "brute force" a fix. Re-evaluate the plan.

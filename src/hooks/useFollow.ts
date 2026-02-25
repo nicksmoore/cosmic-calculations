@@ -1,7 +1,7 @@
 // src/hooks/useFollow.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { getAuthenticatedClient } from "@/integrations/supabase/authClient";
 import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -63,25 +63,25 @@ export function useToggleFollow(targetUserId: string | undefined) {
       if (!user || !targetUserId) throw new Error("Not signed in");
       const token = await getToken({ template: "supabase" });
       if (!token) throw new Error("Could not get auth token");
-      const client = getAuthenticatedClient(token);
 
-      if (isFollowing) {
-        const { error } = await (client as any)
-          .from("follows")
-          .delete()
-          .eq("follower_id", user.id)
-          .eq("following_id", targetUserId);
-        if (error) throw error;
-      } else {
-        const { error } = await (client as any)
-          .from("follows")
-          .insert({ follower_id: user.id, following_id: targetUserId });
-        if (error) throw error;
+      const { data, error } = await supabase.functions.invoke("toggle-follow", {
+        headers: { Authorization: `Bearer ${token}` },
+        body: {
+          userId: user.id,
+          targetUserId,
+          follow: !isFollowing,
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.ok) {
+        throw new Error("Could not update follow state");
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["follow-status", user?.id, targetUserId] });
       queryClient.invalidateQueries({ queryKey: ["follow-counts", targetUserId] });
+      queryClient.invalidateQueries({ queryKey: ["profile-directory", user?.id] });
     },
   });
 }

@@ -4,6 +4,7 @@ import PostComposer from "@/components/feed/PostComposer";
 import { useProfile } from "@/hooks/useProfile";
 import { useEphemeris } from "@/hooks/useEphemeris";
 import { BirthData } from "@/components/intake/BirthDataForm";
+import { timezoneFromLongitude } from "@/lib/timezone";
 
 interface PostComposerSheetProps {
   open: boolean;
@@ -23,7 +24,7 @@ export default function PostComposerSheet({ open, onOpenChange }: PostComposerSh
           location:    profile.birth_location ?? "",
           latitude:    profile.birth_lat,
           longitude:   profile.birth_lng,
-          timezone:    "UTC+0",
+          timezone:    timezoneFromLongitude(profile.birth_lng),
         }
       : null;
 
@@ -31,7 +32,7 @@ export default function PostComposerSheet({ open, onOpenChange }: PostComposerSh
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="glass-panel border-border/30 max-w-2xl mx-auto">
+      <DrawerContent className="glass-lg border-border/40 max-w-2xl mx-auto">
         <DrawerHeader>
           <DrawerTitle className="font-serif text-ethereal">Share with the cosmos</DrawerTitle>
         </DrawerHeader>

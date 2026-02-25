@@ -22,19 +22,19 @@ export const PLANET_SYMBOLS: Record<string, string> = {
 };
 
 // Zodiac signs with symbols
-export const ZODIAC_SIGNS: Record<string, { symbol: string; name: string }> = {
-  Aries: { symbol: "♈", name: "Aries" },
-  Taurus: { symbol: "♉", name: "Taurus" },
-  Gemini: { symbol: "♊", name: "Gemini" },
-  Cancer: { symbol: "♋", name: "Cancer" },
-  Leo: { symbol: "♌", name: "Leo" },
-  Virgo: { symbol: "♍", name: "Virgo" },
-  Libra: { symbol: "♎", name: "Libra" },
-  Scorpio: { symbol: "♏", name: "Scorpio" },
-  Sagittarius: { symbol: "♐", name: "Sagittarius" },
-  Capricorn: { symbol: "♑", name: "Capricorn" },
-  Aquarius: { symbol: "♒", name: "Aquarius" },
-  Pisces: { symbol: "♓", name: "Pisces" },
+export const ZODIAC_SIGNS: Record<string, { symbol: string; name: string; element: string; modality: string; polarity: string }> = {
+  Aries: { symbol: "♈", name: "Aries", element: "Fire", modality: "Cardinal", polarity: "Masculine" },
+  Taurus: { symbol: "♉", name: "Taurus", element: "Earth", modality: "Fixed", polarity: "Feminine" },
+  Gemini: { symbol: "♊", name: "Gemini", element: "Air", modality: "Mutable", polarity: "Masculine" },
+  Cancer: { symbol: "♋", name: "Cancer", element: "Water", modality: "Cardinal", polarity: "Feminine" },
+  Leo: { symbol: "♌", name: "Leo", element: "Fire", modality: "Fixed", polarity: "Masculine" },
+  Virgo: { symbol: "♍", name: "Virgo", element: "Earth", modality: "Mutable", polarity: "Feminine" },
+  Libra: { symbol: "♎", name: "Libra", element: "Air", modality: "Cardinal", polarity: "Masculine" },
+  Scorpio: { symbol: "♏", name: "Scorpio", element: "Water", modality: "Fixed", polarity: "Feminine" },
+  Sagittarius: { symbol: "♐", name: "Sagittarius", element: "Fire", modality: "Mutable", polarity: "Masculine" },
+  Capricorn: { symbol: "♑", name: "Capricorn", element: "Earth", modality: "Cardinal", polarity: "Feminine" },
+  Aquarius: { symbol: "♒", name: "Aquarius", element: "Air", modality: "Fixed", polarity: "Masculine" },
+  Pisces: { symbol: "♓", name: "Pisces", element: "Water", modality: "Mutable", polarity: "Feminine" },
 };
 
 // Aspect types for transits
@@ -50,6 +50,7 @@ export interface TransitAspect {
   orb: number;
   isExact: boolean;
   isBenefic: boolean;
+  durationDays: number | null;
 }
 
 export interface TransitPlanet {
@@ -87,6 +88,28 @@ const ASPECT_ORBS: Record<TransitAspectType, number> = {
   square: 6,
   sextile: 4,
 };
+
+// Approximate daily motion in degrees for each planet
+const APPROX_DAILY_MOTION: Record<string, number> = {
+  Sun: 1.0, Moon: 13.0, Mercury: 1.2, Venus: 1.2,
+  Mars: 0.52, Jupiter: 0.083, Saturn: 0.033,
+  Uranus: 0.012, Neptune: 0.006, Pluto: 0.004, Chiron: 0.05,
+};
+
+/**
+ * Exposed for testing. Total transit window in days (entry to exit).
+ * Uses mean direct motion. Actual duration may be significantly longer
+ * for inner planets (Mercury, Venus, Mars) during retrograde periods.
+ */
+export function computePersonalTransitDuration(
+  planet: string,
+  aspectType: TransitAspectType,
+): number | null {
+  const speed = APPROX_DAILY_MOTION[planet];
+  if (!speed) return null;
+  const orbLimit = ASPECT_ORBS[aspectType];
+  return (2 * orbLimit) / speed;
+}
 
 // Aspect angles
 const ASPECT_ANGLES: Record<TransitAspectType, number> = {
@@ -141,6 +164,7 @@ function findAspects(
           orb: diff,
           isExact: diff < 1,
           isBenefic: BENEFIC_ASPECTS.includes(aspectType as TransitAspectType),
+          durationDays: computePersonalTransitDuration(transitPos.name, aspectType as TransitAspectType),
         });
       }
     }

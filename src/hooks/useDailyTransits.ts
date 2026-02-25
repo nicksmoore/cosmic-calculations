@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { publicSupabase } from "@/integrations/supabase/publicClient";
 import { getDailyCollectiveTransits, CollectiveTransit } from "@/lib/transitEngine";
 import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { getAuthenticatedClient } from "@/integrations/supabase/authClient";
@@ -22,7 +24,7 @@ export function useDailyTransits() {
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (publicSupabase as any)
         .from("daily_transits")
         .select("*")
         .eq("date", today)

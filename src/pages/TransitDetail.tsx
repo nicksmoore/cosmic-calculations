@@ -13,6 +13,7 @@ import {
   getTransitInterpretation,
   PLANET_ARCHETYPES,
 } from "@/lib/astrocartography/interpretations";
+import { formatTransitDuration } from "@/lib/formatTransitDuration";
 
 interface TransitDetailState {
   planet: TransitPlanet;
@@ -71,6 +72,9 @@ const AspectCard = ({ aspect }: { aspect: TransitAspect }) => {
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
               {aspect.transitPlanet} in {aspect.transitSign} {aspect.aspectType} your natal {aspect.natalPlanet} • {aspect.orb.toFixed(1)}° orb
+              {aspect.durationDays != null && (
+                <> • <span className="text-muted-foreground/60">{formatTransitDuration(aspect.durationDays)} window</span></>
+              )}
             </p>
           </div>
           <IntensityBadge intensity={interpretation.intensity} />
@@ -107,7 +111,13 @@ const TransitDetail = () => {
 
   const { planet, natalPlanets } = state;
   const archetype = PLANET_ARCHETYPES[planet.name];
-  const signInfo = ZODIAC_SIGNS[planet.sign] || { symbol: "?", name: planet.sign };
+  const signInfo = ZODIAC_SIGNS[planet.sign] || {
+    symbol: "?",
+    name: planet.sign,
+    element: "Unknown",
+    modality: "Unknown",
+    polarity: "Unknown",
+  };
 
   // Check if this is a planetary return (transiting planet in same sign as natal)
   const natalPlanet = natalPlanets.find((n) => n.name === planet.name);
@@ -154,6 +164,17 @@ const TransitDetail = () => {
           <p className="text-lg text-muted-foreground">
             Currently at {planet.degree.toFixed(1)}° {planet.sign}
           </p>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            <span className="rounded-full border border-border/40 bg-card/50 px-2.5 py-1 text-[11px] uppercase tracking-wider text-foreground/90">
+              Element: {signInfo.element}
+            </span>
+            <span className="rounded-full border border-border/40 bg-card/50 px-2.5 py-1 text-[11px] uppercase tracking-wider text-foreground/90">
+              Modality: {signInfo.modality}
+            </span>
+            <span className="rounded-full border border-border/40 bg-card/50 px-2.5 py-1 text-[11px] uppercase tracking-wider text-foreground/90">
+              Polarity: {signInfo.polarity}
+            </span>
+          </div>
 
           {isReturn && (
             <motion.div

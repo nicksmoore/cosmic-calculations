@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import LocationInput from "./LocationInput";
 import UserMenu from "@/components/UserMenu";
@@ -15,6 +16,7 @@ import PdfUpload from "./PdfUpload";
 
 export interface BirthData {
   name: string;
+  gender?: "male" | "female" | "" | null;
   birthDate: string;
   birthTime: string;
   timeUnknown: boolean;
@@ -30,6 +32,7 @@ interface BirthDataFormProps {
 
 const steps = [
   { id: "name", title: "What's your name?", subtitle: "Let's begin your cosmic journey" },
+  { id: "gender", title: "What's your gender?", subtitle: "Used for synastry filters and friend matching" },
   { id: "date", title: "When were you born?", subtitle: "The stars were aligned just for you" },
   { id: "time", title: "What time were you born?", subtitle: "Precision reveals deeper insights" },
   { id: "location", title: "Where were you born?", subtitle: "Your cosmic coordinates matter" },
@@ -40,6 +43,7 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
   const [showUpload, setShowUpload] = useState(false);
   const [formData, setFormData] = useState<BirthData>({
     name: "",
+    gender: "",
     birthDate: "",
     birthTime: "",
     timeUnknown: false,
@@ -62,16 +66,21 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
         }
         break;
       case 1:
+        if (!formData.gender) {
+          newErrors.gender = "Please select your gender";
+        }
+        break;
+      case 2:
         if (!formData.birthDate) {
           newErrors.birthDate = "Please enter your birth date";
         }
         break;
-      case 2:
+      case 3:
         if (!formData.timeUnknown && !formData.birthTime) {
           newErrors.birthTime = "Please enter your birth time or mark as unknown";
         }
         break;
-      case 3:
+      case 4:
         if (!formData.location.trim()) {
           newErrors.location = "Please enter your birth location";
         } else if (!formData.latitude || !formData.longitude) {
@@ -137,10 +146,31 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
         );
 
       case 1:
-        const selectedDate = formData.birthDate 
+        return (
+          <div className="space-y-4">
+            <Select
+              value={formData.gender ?? ""}
+              onValueChange={(value: "male" | "female") => updateFormData({ gender: value })}
+            >
+              <SelectTrigger className="h-14 text-lg glass-panel border-border/50 focus:border-accent">
+                <SelectValue placeholder="Select gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.gender && (
+              <p className="text-destructive text-sm">{errors.gender}</p>
+            )}
+          </div>
+        );
+
+      case 2: {
+        const selectedDate = formData.birthDate
           ? parse(formData.birthDate, "yyyy-MM-dd", new Date())
           : undefined;
-        
+
         return (
           <div className="space-y-4">
             <Popover>
@@ -153,7 +183,7 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
                   )}
                 >
                   <CalendarIcon className="mr-3 h-5 w-5 text-muted-foreground" />
-                  {formData.birthDate 
+                  {formData.birthDate
                     ? format(selectedDate!, "MMMM d, yyyy")
                     : "Select your birth date"
                   }
@@ -182,8 +212,9 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
             )}
           </div>
         );
+      }
 
-      case 2:
+      case 3:
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between p-4 glass-panel rounded-lg">
@@ -230,7 +261,7 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
           </div>
         );
 
-      case 3:
+      case 4:
         return (
           <div className="space-y-4">
             <LocationInput
@@ -257,9 +288,9 @@ const BirthDataForm = ({ onSubmit }: BirthDataFormProps) => {
   };
 
   const handlePdfExtracted = (data: BirthData) => {
-    setFormData(data);
+    setFormData((prev) => ({ ...prev, ...data, gender: data.gender ?? "" }));
     setShowUpload(false);
-    onSubmit(data);
+    setCurrentStep(1);
   };
 
   return (

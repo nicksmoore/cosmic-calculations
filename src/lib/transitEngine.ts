@@ -24,6 +24,7 @@ export interface CollectiveTransit {
   is_applying: boolean;
   aspect_precision: string | null;
   vibe: string;
+  duration_days: number | null;
 }
 
 export interface DailyTransitData {
@@ -112,6 +113,15 @@ function getPlanetPositions(date: Date): Map<string, { lon: number; isRetrograde
 }
 
 // ---- Public API ----
+
+/** Exposed for testing. Computes remaining days for a collective transit. */
+export function computeCollectiveDuration(orb: number, orbChange: number): number | null {
+  if (Math.abs(orbChange) <= 0.001) return null;
+  const days = orbChange > 0
+    ? (orb + COLLECTIVE_ORB) / orbChange
+    : (COLLECTIVE_ORB - orb) / Math.abs(orbChange);
+  return Math.min(Math.max(0, days), 365);
+}
 
 export function getPersonalTransits(
   natalPlanets: Array<{ name: string; longitude: number }>,
@@ -225,6 +235,7 @@ export function getDailyCollectiveTransits(): DailyTransitData {
           is_applying:       applying,
           aspect_precision:  aspectPrecision,
           vibe,
+          duration_days:     computeCollectiveDuration(orb, orbChange),
         });
       }
     }
