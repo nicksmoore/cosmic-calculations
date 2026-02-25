@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Outlet, NavLink, Navigate } from "react-router-dom";
 import { ClerkProvider } from "@clerk/clerk-react";
 import AuthGuard from "@/components/AuthGuard";
+import GlobalLayout from "@/components/layout/GlobalLayout";
 import BottomNav from "@/components/BottomNav";
 import PostComposerSheet from "@/components/PostComposerSheet";
 import DesktopSidebar from "@/components/DesktopSidebar";
@@ -155,6 +156,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <GlobalLayout>
           <Routes>
             <Route path="/" element={<RootRedirect />} />
             <Route path="/sign-in" element={<SignInPage />} />
@@ -187,6 +189,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </GlobalLayout>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
