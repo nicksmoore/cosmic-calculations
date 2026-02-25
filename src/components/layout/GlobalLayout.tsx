@@ -17,8 +17,8 @@ export default function GlobalLayout({ children }: GlobalLayoutProps) {
       {/* z-0: persistent R3F canvas */}
       <CosmicBackground />
 
-      {/* z-10: motion layer + content */}
-      <div className="relative z-10" style={{ pointerEvents: "none" }}>
+      {/* z-20: motion layer + content (higher than any modals/overlays) */}
+      <div className="relative z-20 w-full">
         <AnimatePresence mode="wait">
           <PageTransition key={location.pathname}>
             {children}

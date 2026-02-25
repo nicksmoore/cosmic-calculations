@@ -159,38 +159,38 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <GlobalLayout>
-          <Routes>
-            <Route path="/" element={<RootRedirect />} />
-            <Route path="/sign-in" element={<SignInPage />} />
-            <Route
-              path="/onboarding"
-              element={
-                <AuthGuard requireBirthData={false}>
-                  <Onboarding />
-                </AuthGuard>
-              }
-            />
-            {/* Authenticated routes with bottom nav */}
-            <Route
-              element={
-                <AuthGuard>
-                  <AuthedLayout />
-                </AuthGuard>
-              }
-            >
-              <Route path="/feed" element={<Feed />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/friends" element={<Friends />} />
-              <Route path="/bazaar" element={<Marketplace />} />
-              <Route path="/marketplace" element={<Navigate to="/bazaar" replace />} />
-              <Route path="/live" element={<LiveVideo />} />
-              <Route path="/match" element={<Match />} />
-              <Route path="/profile/:userId" element={<PublicProfile />} />
-              <Route path="/meaning" element={<PlacementMeaning />} />
-              <Route path="/transit" element={<TransitDetail />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+            <Routes>
+              <Route path="/" element={<RootRedirect />} />
+              <Route path="/sign-in" element={<SignInPage />} />
+              <Route
+                path="/onboarding"
+                element={
+                  <AuthGuard requireBirthData={false}>
+                    <Onboarding />
+                  </AuthGuard>
+                }
+              />
+              {/* Authenticated routes with bottom nav */}
+              <Route
+                element={
+                  <AuthGuard>
+                    <AuthedLayout />
+                  </AuthGuard>
+                }
+              >
+                <Route path="/feed" element={<Feed />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/friends" element={<Friends />} />
+                <Route path="/bazaar" element={<Marketplace />} />
+                <Route path="/marketplace" element={<Navigate to="/bazaar" replace />} />
+                <Route path="/live" element={<LiveVideo />} />
+                <Route path="/match" element={<Match />} />
+                <Route path="/profile/:userId" element={<PublicProfile />} />
+                <Route path="/meaning" element={<PlacementMeaning />} />
+                <Route path="/transit" element={<TransitDetail />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </GlobalLayout>
         </BrowserRouter>
       </TooltipProvider>

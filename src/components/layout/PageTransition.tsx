@@ -14,7 +14,6 @@ export default function PageTransition({ children }: { children: ReactNode }) {
       initial="initial"
       animate="animate"
       exit="exit"
-      style={{ pointerEvents: "auto" }}
     >
       {children}
     </motion.div>

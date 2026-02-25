@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ChangeEvent, useEffect, useMemo, useState, lazy, Suspense } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { ShoppingBag, Search, Flame, Mountain, Wind, Droplets, Trophy } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useAnimate } from "framer-motion";
-const BazaarTentScene = lazy(() => import("@/components/bazaar/BazaarTentScene"));
+import BazaarTentScene from "@/components/bazaar/BazaarTentScene";
 import { deriveDominantElement, getWeekKey, type HouseElement } from "@/lib/elementalHouses";
 
 interface Listing {
@@ -509,16 +509,14 @@ export default function Marketplace() {
             )}
           </div>
           <div className="mb-2">
-            <Suspense fallback={<div className="h-48 bg-card/30 rounded-lg animate-pulse" />}>
-              <BazaarTentScene
-                categories={BAZAAR_CATEGORIES}
-                activeCategory={activeTent}
-                onSelectCategory={(category) => {
-                  setActiveTent(category);
-                  setForm((f) => ({ ...f, category }));
-                }}
-              />
-            </Suspense>
+            <BazaarTentScene
+              categories={BAZAAR_CATEGORIES}
+              activeCategory={activeTent}
+              onSelectCategory={(category) => {
+                setActiveTent(category);
+                setForm((f) => ({ ...f, category }));
+              }}
+            />
           </div>
 
           {!activeTent && (
