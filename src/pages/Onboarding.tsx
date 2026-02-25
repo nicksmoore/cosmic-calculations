@@ -1,6 +1,10 @@
 // src/pages/Onboarding.tsx
+import { useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
+import SplitType from "split-type";
 import { Sparkles } from "lucide-react";
 import StarField from "@/components/StarField";
 import BirthDataForm, { BirthData } from "@/components/intake/BirthDataForm";
@@ -17,6 +21,23 @@ export default function Onboarding() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { updateProfile } = useProfile();
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    if (!heroRef.current) return;
+    const headings = heroRef.current.querySelectorAll("[data-gsap-heading]");
+    headings.forEach((el) => {
+      const split = new SplitType(el as HTMLElement, { types: "chars" });
+      gsap.from(split.chars, {
+        opacity: 0,
+        y: 30,
+        stagger: 0.03,
+        duration: 0.6,
+        ease: "power3.out",
+        delay: 0.2,
+      });
+    });
+  }, { scope: heroRef });
 
   const handleSubmit = async (data: BirthData) => {
     const success = await updateProfile({
@@ -38,7 +59,7 @@ export default function Onboarding() {
     <div className="min-h-screen bg-background text-foreground overflow-hidden pointer-events-auto">
       <StarField />
 
-      <div className="relative z-10 pt-8 pb-4 text-center">
+      <div ref={heroRef} className="relative z-10 pt-8 pb-4 text-center">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -47,14 +68,12 @@ export default function Onboarding() {
           <Sparkles className="h-4 w-4" aria-hidden="true" />
           Step 1 of 1
         </motion.div>
-        <motion.h1
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
+        <h1
+          data-gsap-heading
           className="text-2xl font-serif text-ethereal"
         >
           Your Cosmic Blueprint
-        </motion.h1>
+        </h1>
       </div>
 
       <BirthDataForm onSubmit={handleSubmit} />
