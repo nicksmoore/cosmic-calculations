@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import StarField from "@/components/StarField";
-import { CosmicLoaderPage } from "@/components/ui/CosmicLoader";
 import { useMatchFeed, MatchProfile } from "@/hooks/useMatchFeed";
 import { useProfileDirectory, DirectoryProfile } from "@/hooks/useProfileDirectory";
 import { useToggleFollow } from "@/hooks/useFollow";
@@ -434,10 +433,6 @@ export default function Friends() {
     mediaRecorderRef.current = null;
     setRecording(false);
   };
-
-  if (friendsLoading) {
-    return <CosmicLoaderPage />;
-  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">

@@ -100,8 +100,9 @@ const TransitDetail = () => {
 
   if (!state?.planet) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <StarField />
+        <div className="text-center space-y-4 relative z-10">
           <p className="text-muted-foreground">No transit data available.</p>
           <Button onClick={() => navigate("/")}>Return to Chart</Button>
         </div>

@@ -1,7 +1,7 @@
 // src/pages/Profile.tsx
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Edit2, Save, Globe, Lock, Sparkles, Info } from "lucide-react";
+import { Edit2, Save, Globe, Lock, Sparkles, Info, Loader2 } from "lucide-react";
 import { CosmicLoaderPage } from "@/components/ui/CosmicLoader";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -248,20 +248,22 @@ const ProfilePage = () => {
     if (house) setDrawerOpen(true);
   };
 
-  if (isLoading) {
-    return <CosmicLoaderPage />;
-  }
-
   if (!profile) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <StarField />
         <div className="text-center relative z-10">
-          <h2 className="text-xl font-serif mb-2">No profile data</h2>
-          <p className="text-sm text-muted-foreground mb-4">Unable to load your profile. Please try refreshing.</p>
-          <Button variant="outline" onClick={() => window.location.reload()}>
-            Refresh Page
-          </Button>
+          {isLoading ? (
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+          ) : (
+            <>
+              <h2 className="text-xl font-serif mb-2">No profile data</h2>
+              <p className="text-sm text-muted-foreground mb-4">Unable to load your profile. Please try refreshing.</p>
+              <Button variant="outline" onClick={() => window.location.reload()}>
+                Refresh Page
+              </Button>
+            </>
+          )}
         </div>
       </div>
     );
