@@ -252,6 +252,21 @@ const ProfilePage = () => {
     return <CosmicLoaderPage />;
   }
 
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <StarField />
+        <div className="text-center relative z-10">
+          <h2 className="text-xl font-serif mb-2">No profile data</h2>
+          <p className="text-sm text-muted-foreground mb-4">Unable to load your profile. Please try refreshing.</p>
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            Refresh Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <StarField />
