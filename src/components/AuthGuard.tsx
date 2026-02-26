@@ -1,6 +1,6 @@
 // src/components/AuthGuard.tsx
 import { Navigate, useLocation } from "react-router-dom";
-import { CosmicLoaderPage } from "@/components/ui/CosmicLoader";
+import StarField from "@/components/StarField";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -16,9 +16,12 @@ export default function AuthGuard({ children, requireBirthData = true }: AuthGua
 
   // Wait for both auth AND profile to resolve before making any redirect decision.
   // Without this, a returning user with birth data would flash /onboarding for a frame.
+  // Show StarField (not a blank full-page spinner) so the background is always visible.
   if (authLoading || (user && profileLoading)) {
     return (
-      <CosmicLoaderPage />
+      <div className="min-h-screen bg-background">
+        <StarField />
+      </div>
     );
   }
 
