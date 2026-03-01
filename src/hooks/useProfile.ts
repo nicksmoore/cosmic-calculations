@@ -41,12 +41,20 @@ export function useProfile() {
   const { getToken } = useClerkAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  // Track which user ID we last completed a profile fetch for.
+  // Derived loading: if user is set but loadedUserId doesn't match yet, we're still loading.
+  // This closes the React 18 concurrent-mode race where useEffect runs after the render that
+  // first sets `user`, causing AuthGuard to see user≠null + profileLoading=false + profile=null
+  // and incorrectly redirect to /onboarding.
+  const [loadedUserId, setLoadedUserId] = useState<string | null>(null);
+  const effectiveIsLoading = isLoading || (user != null && loadedUserId !== user.id);
   const lastAvatarSyncRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!user) {
       setProfile(null);
+      setLoadedUserId(null);
       setIsLoading(false);
       return;
     }
@@ -111,6 +119,7 @@ export function useProfile() {
         setProfile(null);
       } finally {
         setIsLoading(false);
+        setLoadedUserId(user.id);
       }
     };
 
@@ -227,5 +236,5 @@ export function useProfile() {
     }
   }, [user, toast, getToken]);
 
-  return { profile, isLoading, updateProfile };
+  return { profile, isLoading: effectiveIsLoading, updateProfile };
 }

@@ -21,6 +21,9 @@ export default function AuthGuard({ children, requireBirthData = true }: AuthGua
     return (
       <div className="min-h-screen bg-background">
         <StarField />
+        <span role="status" aria-live="polite" aria-busy="true" className="sr-only">
+          Loading your account…
+        </span>
       </div>
     );
   }
